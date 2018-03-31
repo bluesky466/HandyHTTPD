@@ -84,6 +84,9 @@ public class HttpRequest {
         return mInetAddress;
     }
 
+    /**
+     * print request just for defbug.
+     */
     public void printRequest() {
         System.out.println("########## " + mMethod + " " + mUri + " " + mVersion + " ##########");
         System.out.println(mInetAddress);

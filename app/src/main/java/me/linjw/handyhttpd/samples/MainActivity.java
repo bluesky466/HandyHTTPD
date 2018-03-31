@@ -1,7 +1,7 @@
 package me.linjw.handyhttpd.samples;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 
 import me.linjw.handyhttpd.HandyHttpdServer;
 
@@ -13,6 +13,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        new HandyHttpdServer(PORT).start();
+        new HandyHttpdServer.Builder(PORT)
+                .build()
+                .start();
     }
 }
