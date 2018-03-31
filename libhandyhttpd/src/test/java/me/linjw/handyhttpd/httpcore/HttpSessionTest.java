@@ -1,10 +1,7 @@
 package me.linjw.handyhttpd.httpcore;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -28,7 +25,6 @@ import static org.powermock.api.mockito.PowerMockito.mock;
  * Created by linjiawei on 2018/3/31.
  * e-mail : bluesky466@qq.com
  */
-@RunWith(PowerMockRunner.class)
 public class HttpSessionTest {
     @Test
     public void isEqual() {
@@ -140,7 +136,6 @@ public class HttpSessionTest {
     }
 
     @Test
-    @PrepareForTest({HandyHttpdServer.class, HttpResponse.class, HttpSession.class})
     public void run() throws IOException {
         String header = "GET /html/rfc2616?key=val HTTP/1.1\r\n" +
                 "Host: tools.ietf.org\r\n" +

@@ -9,6 +9,7 @@ import java.util.Map;
  */
 
 
+@SuppressWarnings("WeakerAccess")
 public class HttpRequest {
     private String mMethod;
     private String mUri;
@@ -27,24 +28,8 @@ public class HttpRequest {
             mParams = new HashMap<>();
         } else {
             mUri = uri.substring(0, posQuery);
-            mParams = getParams(uri.substring(posQuery + 1));
+            mParams = parseParams(uri.substring(posQuery + 1));
         }
-    }
-
-    private Map<String, String> getParams(String query) {
-        Map<String, String> params = new HashMap<>();
-
-        if (query == null || query.isEmpty()) {
-            return params;
-        }
-
-        for (String param : query.split("&")) {
-            String[] list = param.split("=");
-            if (list.length > 1) {
-                params.put(list[0], list[1]);
-            }
-        }
-        return params;
     }
 
     public String getMethod() {
@@ -66,5 +51,22 @@ public class HttpRequest {
     public Map<String, String> getParams() {
         return mParams;
     }
+
+    public static Map<String, String> parseParams(String query) {
+        Map<String, String> params = new HashMap<>();
+
+        if (query == null || query.isEmpty()) {
+            return params;
+        }
+
+        for (String param : query.split("&")) {
+            String[] list = param.split("=");
+            if (list.length > 1) {
+                params.put(list[0], list[1]);
+            }
+        }
+        return params;
+    }
+
 }
 
