@@ -19,7 +19,8 @@ public class HttpRequestTest {
                 "GET",
                 "/path1/path2?key1=val1&key2=val2",
                 "HTTP/1.1",
-                headers
+                headers,
+                null
         );
 
         assertEquals("GET", request.getMethod());
@@ -28,7 +29,6 @@ public class HttpRequestTest {
         assertEquals("val1", request.getParams().get("key1"));
         assertEquals("val2", request.getParams().get("key2"));
         assertEquals(headers, request.getHeaders());
-
     }
 
     @Test

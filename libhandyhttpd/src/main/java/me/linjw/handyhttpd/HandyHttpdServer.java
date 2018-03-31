@@ -15,6 +15,8 @@ import me.linjw.handyhttpd.scheduler.IScheduler;
 
 @SuppressWarnings("WeakerAccess")
 public class HandyHttpdServer {
+    public static final boolean DEBUG = true;
+
     private int mPort;
     private HttpEngine mEngine;
     private IScheduler mScheduler;
@@ -86,6 +88,9 @@ public class HandyHttpdServer {
      * @return HttpResponse
      */
     public HttpResponse onRequest(HttpRequest request) {
+        if (DEBUG) {
+            request.printRequest();
+        }
         return newResponse(HttpResponse.Status.NOT_FOUND, "404 Not Found");
     }
 }

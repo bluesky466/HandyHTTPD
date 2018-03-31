@@ -1,5 +1,6 @@
 package me.linjw.handyhttpd.httpcore;
 
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,6 +17,7 @@ public class HttpRequest {
     private final String mVersion;
     private final Map<String, String> mHeaders;
     private final Map<String, String> mParams;
+    private final InetAddress mInetAddress;
 
     /**
      * parse params from url query.
@@ -39,11 +41,15 @@ public class HttpRequest {
         return params;
     }
 
-    public HttpRequest(String method, String uri, String version, Map<String, String> headers) {
+    public HttpRequest(String method,
+                       String uri,
+                       String version,
+                       Map<String, String> headers,
+                       InetAddress inetAddress) {
         mMethod = method;
         mVersion = version;
         mHeaders = headers;
-
+        mInetAddress = inetAddress;
         int posQuery = uri.indexOf("?");
         if (posQuery == -1) {
             mUri = uri;
@@ -72,6 +78,24 @@ public class HttpRequest {
 
     public Map<String, String> getParams() {
         return mParams;
+    }
+
+    public InetAddress getInetAddress() {
+        return mInetAddress;
+    }
+
+    public void printRequest() {
+        System.out.println("########## " + mMethod + " " + mUri + " " + mVersion + " ##########");
+        System.out.println(mInetAddress);
+        System.out.println("Headers:");
+        for (Map.Entry<String, String> header : mHeaders.entrySet()) {
+            System.out.println(header.getKey() + " : " + header.getValue());
+        }
+        System.out.println("Params:");
+        for (Map.Entry<String, String> param : mParams.entrySet()) {
+            System.out.println(param.getKey() + " = " + param.getValue());
+        }
+        System.out.println("##########################");
     }
 }
 

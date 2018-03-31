@@ -201,7 +201,8 @@ public class HttpSession implements Runnable {
                     requestLine[REQUEST_LINE_METHOD],
                     requestLine[REQUEST_LINE_URI],
                     requestLine[REQUEST_LINE_VERSION],
-                    headers);
+                    headers,
+                    mSocket.getInetAddress());
 
             HttpResponse response = mServer.onRequest(request);
             response.send(mOutputStream);
