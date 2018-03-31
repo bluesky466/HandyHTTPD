@@ -8,6 +8,7 @@ import java.util.concurrent.Executors;
  * e-mail : bluesky466@qq.com
  */
 
+@SuppressWarnings("WeakerAccess")
 public class FixSizeScheduler implements IScheduler {
     public static final int DEFAULT_SIZE = 4;
 

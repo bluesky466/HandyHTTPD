@@ -11,11 +11,33 @@ import java.util.Map;
 
 @SuppressWarnings("WeakerAccess")
 public class HttpRequest {
-    private String mMethod;
-    private String mUri;
-    private String mVersion;
-    private Map<String, String> mHeaders;
-    private Map<String, String> mParams;
+    private final String mMethod;
+    private final String mUri;
+    private final String mVersion;
+    private final Map<String, String> mHeaders;
+    private final Map<String, String> mParams;
+
+    /**
+     * parse params from url query.
+     *
+     * @param query url query
+     * @return params
+     */
+    public static Map<String, String> parseParams(String query) {
+        Map<String, String> params = new HashMap<>();
+
+        if (query == null || query.isEmpty()) {
+            return params;
+        }
+
+        for (String param : query.split("&")) {
+            String[] list = param.split("=");
+            if (list.length > 1) {
+                params.put(list[0], list[1]);
+            }
+        }
+        return params;
+    }
 
     public HttpRequest(String method, String uri, String version, Map<String, String> headers) {
         mMethod = method;
@@ -51,22 +73,5 @@ public class HttpRequest {
     public Map<String, String> getParams() {
         return mParams;
     }
-
-    public static Map<String, String> parseParams(String query) {
-        Map<String, String> params = new HashMap<>();
-
-        if (query == null || query.isEmpty()) {
-            return params;
-        }
-
-        for (String param : query.split("&")) {
-            String[] list = param.split("=");
-            if (list.length > 1) {
-                params.put(list[0], list[1]);
-            }
-        }
-        return params;
-    }
-
 }
 

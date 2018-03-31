@@ -13,17 +13,62 @@ import me.linjw.handyhttpd.scheduler.IScheduler;
  * e-mail : bluesky466@qq.com
  */
 
-
+@SuppressWarnings("WeakerAccess")
 public class HandyHttpdServer {
     private int mPort;
     private HttpEngine mEngine;
     private IScheduler mScheduler;
+
+    /**
+     * new http response.
+     *
+     * @param message message
+     * @return HttpResponse
+     */
+    public static HttpResponse newResponse(String message) {
+        return newResponse(HttpResponse.Status.OK, message);
+    }
+
+    /**
+     * new http response.
+     *
+     * @param status  status
+     * @param message message
+     * @return HttpResponse
+     */
+    public static HttpResponse newResponse(HttpResponse.Status status, String message) {
+        return newResponse(status, message, HttpResponse.MIME_TYPE_PLAINTEXT);
+    }
+
+    /**
+     * new http response.
+     *
+     * @param status   status
+     * @param message  message
+     * @param mimeType mimeType
+     * @return HttpResponse
+     */
+    public static HttpResponse newResponse(
+            HttpResponse.Status status,
+            String message,
+            String mimeType) {
+        return new HttpResponse(
+                status,
+                mimeType,
+                new ByteArrayInputStream(message.getBytes()),
+                message.getBytes().length);
+    }
 
     public HandyHttpdServer(int port) {
         mPort = port;
         mScheduler = new FixSizeScheduler();
     }
 
+    /**
+     * start server.
+     *
+     * @return is success
+     */
     public boolean start() {
         if (mEngine != null) {
             return false;
@@ -33,13 +78,14 @@ public class HandyHttpdServer {
         return true;
     }
 
+    /**
+     * this method will be called when recv http request,
+     * you can override it to do your work.
+     *
+     * @param request http request
+     * @return HttpResponse
+     */
     public HttpResponse onRequest(HttpRequest request) {
-        byte[] data = ("access : " + request.getUri()).getBytes();
-
-        return new HttpResponse(
-                HttpResponse.Status.OK,
-                HttpResponse.MIME_TYPE_PLAINTEXT,
-                new ByteArrayInputStream(data),
-                data.length);
+        return newResponse(HttpResponse.Status.NOT_FOUND, "404 Not Found");
     }
 }

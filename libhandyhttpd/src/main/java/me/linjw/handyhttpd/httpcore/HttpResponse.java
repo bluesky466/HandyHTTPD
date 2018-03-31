@@ -14,23 +14,24 @@ import java.io.UnsupportedEncodingException;
  */
 
 
+@SuppressWarnings("unused")
 public class HttpResponse {
     public static final String MIME_TYPE_PLAINTEXT = "text/plain";
     public static final String MIME_TYPE_HTML = "text/html";
 
     private Status mStatus;
     private InputStream mData;
-    private long mTotalBytes;
+    private long mDataSize;
     private String mMimeType;
 
-    public HttpResponse(Status status, String mimeType, InputStream data, long totalBytes) {
+    public HttpResponse(Status status, String mimeType, InputStream data, long dataSize) {
         mStatus = status;
         mData = data;
-        mTotalBytes = totalBytes;
+        mDataSize = dataSize;
         mMimeType = mimeType;
     }
 
-    public void send(OutputStream os) {
+    void send(OutputStream os) {
         try {
             sendHeader(os);
             sendBody(os);
@@ -44,16 +45,17 @@ public class HttpResponse {
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
         PrintWriter pw = new PrintWriter(writer, false);
 
-        //Status-Line
+        //status line
         pw.append("HTTP/1.1 ").append(mStatus.getDescription()).append(" \r\n");
 
-        printHeader(pw, "Content-Type", mMimeType);
-        printHeader(pw, "content-length", String.valueOf(mTotalBytes));
+        //header fields
+        printHeaderField(pw, "Content-Type", mMimeType);
+        printHeaderField(pw, "content-length", String.valueOf(mDataSize));
         pw.append("\r\n");
         pw.flush();
     }
 
-    private void printHeader(PrintWriter pw, String key, String val) {
+    private void printHeaderField(PrintWriter pw, String key, String val) {
         pw.append(key).append(": ").append(val).append("\r\n");
     }
 
@@ -62,9 +64,7 @@ public class HttpResponse {
         byte[] buff = new byte[(int) BUFFER_SIZE];
 
         int read = mData.read(buff, 0, (int) BUFFER_SIZE);
-        int len = 0;
         while (read > 0) {
-            len += read;
             os.write(buff, 0, read);
             read = mData.read(buff, 0, (int) BUFFER_SIZE);
         }

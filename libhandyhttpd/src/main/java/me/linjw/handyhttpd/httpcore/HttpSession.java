@@ -27,50 +27,10 @@ public class HttpSession implements Runnable {
     public static final int REQUEST_LINE_URI = 1;
     public static final int REQUEST_LINE_VERSION = 2;
 
-    private HandyHttpdServer mServer;
-    private Socket mSocket;
-    private BufferedInputStream mInputStream;
-    private OutputStream mOutputStream;
-
-    public HttpSession(HandyHttpdServer server, Socket socket) throws IOException {
-        mServer = server;
-        mSocket = socket;
-        mInputStream = new BufferedInputStream(socket.getInputStream());
-        mOutputStream = socket.getOutputStream();
-    }
-
-    /**
-     * read http request and send http response in a subthread.
-     */
-    @Override
-    public void run() {
-        mInputStream.mark(BUF_SIZE);
-        byte[] buff = new byte[BUF_SIZE];
-
-        try {
-            String[] requestLine = parseRequestLine(mInputStream, buff, BUF_SIZE);
-            Map<String, String> headers = parseHeaderFields(mInputStream, buff, BUF_SIZE);
-
-
-            if (requestLine == null || requestLine.length < 3) {
-                return;
-            }
-            HttpRequest request = new HttpRequest(
-                    requestLine[REQUEST_LINE_METHOD],
-                    requestLine[REQUEST_LINE_URI],
-                    requestLine[REQUEST_LINE_VERSION],
-                    headers);
-
-            HttpResponse response = mServer.onRequest(request);
-            response.send(mOutputStream);
-
-            mInputStream.close();
-            mOutputStream.close();
-            mSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    private final HandyHttpdServer mServer;
+    private final Socket mSocket;
+    private final BufferedInputStream mInputStream;
+    private final OutputStream mOutputStream;
 
     /**
      * parse request line from InputStream.
@@ -212,5 +172,45 @@ public class HttpSession implements Runnable {
             }
         }
         return true;
+    }
+
+    public HttpSession(HandyHttpdServer server, Socket socket) throws IOException {
+        mServer = server;
+        mSocket = socket;
+        mInputStream = new BufferedInputStream(socket.getInputStream());
+        mOutputStream = socket.getOutputStream();
+    }
+
+    /**
+     * read http request and send http response in a subthread.
+     */
+    @Override
+    public void run() {
+        mInputStream.mark(BUF_SIZE);
+        byte[] buff = new byte[BUF_SIZE];
+
+        try {
+            String[] requestLine = parseRequestLine(mInputStream, buff, BUF_SIZE);
+            Map<String, String> headers = parseHeaderFields(mInputStream, buff, BUF_SIZE);
+
+
+            if (requestLine == null || requestLine.length < 3) {
+                return;
+            }
+            HttpRequest request = new HttpRequest(
+                    requestLine[REQUEST_LINE_METHOD],
+                    requestLine[REQUEST_LINE_URI],
+                    requestLine[REQUEST_LINE_VERSION],
+                    headers);
+
+            HttpResponse response = mServer.onRequest(request);
+            response.send(mOutputStream);
+
+            mInputStream.close();
+            mOutputStream.close();
+            mSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
