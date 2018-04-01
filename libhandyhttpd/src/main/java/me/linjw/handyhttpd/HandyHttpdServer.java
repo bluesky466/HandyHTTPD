@@ -61,10 +61,20 @@ public class HandyHttpdServer {
                 message.getBytes().length);
     }
 
-    public HandyHttpdServer(int port, IScheduler scheduler) {
+    public HandyHttpdServer(int port) {
         mPort = port;
+    }
+
+
+    /**
+     * set scheduler.
+     *
+     * @param scheduler scheduler
+     */
+    public void setScheduler(IScheduler scheduler) {
         mScheduler = scheduler;
     }
+
 
     /**
      * start server.
@@ -75,6 +85,11 @@ public class HandyHttpdServer {
         if (mEngine != null) {
             return false;
         }
+
+        if (mScheduler == null) {
+            mScheduler = new FixSizeScheduler();
+        }
+
         mEngine = new HttpEngine(this, mPort, mScheduler);
         mEngine.start();
         return true;
@@ -92,30 +107,5 @@ public class HandyHttpdServer {
             request.printRequest();
         }
         return newResponse(HttpResponse.Status.NOT_FOUND, "404 Not Found");
-    }
-
-    /**
-     * HandyHttpdServer builder.
-     */
-    public static final class Builder {
-        private int mPort;
-        private IScheduler mScheduler;
-
-        public Builder(int port) {
-            mPort = port;
-        }
-
-        public Builder setScheduler(IScheduler scheduler) {
-            mScheduler = scheduler;
-            return this;
-        }
-
-        public HandyHttpdServer build() {
-            if (mScheduler == null) {
-                mScheduler = new FixSizeScheduler();
-            }
-            return new HandyHttpdServer(mPort, mScheduler);
-        }
-
     }
 }
