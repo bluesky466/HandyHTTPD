@@ -4,6 +4,9 @@ import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 
+import me.linjw.handyhttpd.HandyHttpd;
+import me.linjw.handyhttpd.HandyHttpdServer;
+
 /**
  * Created by linjiawei on 2018/3/30.
  * e-mail : bluesky466@qq.com
@@ -84,21 +87,5 @@ public class HttpRequest {
         return mInetAddress;
     }
 
-    /**
-     * print request just for defbug.
-     */
-    public void printRequest() {
-        System.out.println("########## " + mMethod + " " + mUri + " " + mVersion + " ##########");
-        System.out.println(mInetAddress);
-        System.out.println("Headers:");
-        for (Map.Entry<String, String> header : mHeaders.entrySet()) {
-            System.out.println(header.getKey() + " : " + header.getValue());
-        }
-        System.out.println("Params:");
-        for (Map.Entry<String, String> param : mParams.entrySet()) {
-            System.out.println(param.getKey() + " = " + param.getValue());
-        }
-        System.out.println("##########################");
-    }
 }
 

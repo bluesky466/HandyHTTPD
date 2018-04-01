@@ -8,6 +8,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
+import me.linjw.handyhttpd.HandyHttpd;
+
 /**
  * Created by linjiawei on 2018/3/30.
  * e-mail : bluesky466@qq.com
@@ -21,8 +23,9 @@ public class HttpResponse {
 
     private Status mStatus;
     private InputStream mData;
-    private long mDataSize;
     private String mMimeType;
+    private long mDataSize;
+    private boolean mKeepAlive;
 
     public HttpResponse(Status status, String mimeType, InputStream data, long dataSize) {
         mStatus = status;
@@ -31,14 +34,18 @@ public class HttpResponse {
         mMimeType = mimeType;
     }
 
-    void send(OutputStream os) {
+    void send(OutputStream os) throws IOException {
         try {
             sendHeader(os);
             sendBody(os);
             os.flush();
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
+        } finally {
+            HandyHttpd.safeClose(mData);
         }
+    }
+
+    void setKeepAlive(boolean keepAlive) {
+        mKeepAlive = keepAlive;
     }
 
     private void sendHeader(OutputStream os) throws UnsupportedEncodingException {
@@ -51,6 +58,7 @@ public class HttpResponse {
         //header fields
         printHeaderField(pw, "Content-Type", mMimeType);
         printHeaderField(pw, "content-length", String.valueOf(mDataSize));
+        printHeaderField(pw, "Connection", mKeepAlive ? "keep-alive" : "close");
         pw.append("\r\n");
         pw.flush();
     }

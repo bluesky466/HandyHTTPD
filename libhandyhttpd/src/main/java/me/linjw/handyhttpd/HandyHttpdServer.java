@@ -15,51 +15,11 @@ import me.linjw.handyhttpd.scheduler.IScheduler;
 
 @SuppressWarnings("WeakerAccess")
 public class HandyHttpdServer {
-    public static final boolean DEBUG = true;
+    public static final int DEFAULT_KEEP_ALIVE_TIMEOUT = 5000;
 
     private int mPort;
     private HttpEngine mEngine;
     private IScheduler mScheduler;
-
-    /**
-     * new http response.
-     *
-     * @param message message
-     * @return HttpResponse
-     */
-    public static HttpResponse newResponse(String message) {
-        return newResponse(HttpResponse.Status.OK, message);
-    }
-
-    /**
-     * new http response.
-     *
-     * @param status  status
-     * @param message message
-     * @return HttpResponse
-     */
-    public static HttpResponse newResponse(HttpResponse.Status status, String message) {
-        return newResponse(status, message, HttpResponse.MIME_TYPE_PLAINTEXT);
-    }
-
-    /**
-     * new http response.
-     *
-     * @param status   status
-     * @param message  message
-     * @param mimeType mimeType
-     * @return HttpResponse
-     */
-    public static HttpResponse newResponse(
-            HttpResponse.Status status,
-            String message,
-            String mimeType) {
-        return new HttpResponse(
-                status,
-                mimeType,
-                new ByteArrayInputStream(message.getBytes()),
-                message.getBytes().length);
-    }
 
     public HandyHttpdServer(int port) {
         mPort = port;
@@ -82,6 +42,16 @@ public class HandyHttpdServer {
      * @return is success
      */
     public boolean start() {
+        return start(DEFAULT_KEEP_ALIVE_TIMEOUT);
+    }
+
+    /**
+     * start server.
+     *
+     * @param timeout timeout for keepalive
+     * @return is success
+     */
+    public boolean start(int timeout) {
         if (mEngine != null) {
             return false;
         }
@@ -90,7 +60,7 @@ public class HandyHttpdServer {
             mScheduler = new FixSizeScheduler();
         }
 
-        mEngine = new HttpEngine(this, mPort, mScheduler);
+        mEngine = new HttpEngine(this, mPort, timeout, mScheduler);
         mEngine.start();
         return true;
     }
@@ -103,9 +73,7 @@ public class HandyHttpdServer {
      * @return HttpResponse
      */
     public HttpResponse onRequest(HttpRequest request) {
-        if (DEBUG) {
-            request.printRequest();
-        }
-        return newResponse(HttpResponse.Status.NOT_FOUND, "404 Not Found");
+        HandyHttpd.printRequest(request);
+        return HandyHttpd.newResponse(HttpResponse.Status.NOT_FOUND, "404 Not Found");
     }
 }

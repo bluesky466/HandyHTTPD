@@ -7,10 +7,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 
+import me.linjw.handyhttpd.HandyHttpd;
 import me.linjw.handyhttpd.HandyHttpdServer;
 
 /**
@@ -27,10 +30,14 @@ public class HttpSession implements Runnable {
     public static final int REQUEST_LINE_URI = 1;
     public static final int REQUEST_LINE_VERSION = 2;
 
+    public static final String LOCAL_ADDRESS = "127.0.0.1";
+
+
     private final HandyHttpdServer mServer;
     private final Socket mSocket;
     private final BufferedInputStream mInputStream;
     private final OutputStream mOutputStream;
+    private InetAddress mInetAddress;
 
     /**
      * parse request line from InputStream.
@@ -72,7 +79,7 @@ public class HttpSession implements Runnable {
             throws IOException {
         int headerEnd = moveDataWithSuffix(is, buf, bufSize, "\r\n\r\n", "\n\n");
         if (headerEnd == 0) {
-            return null;
+            return new HashMap<>();
         }
 
         BufferedReader reader = new BufferedReader(
@@ -112,6 +119,9 @@ public class HttpSession implements Runnable {
         int rlen = 0;
         int length = 0;
         int read = is.read(buf, 0, bufSize);
+        if (read == -1) {
+            throw new SocketException("socket disconnect");
+        }
         while (read > 0) {
             rlen += read;
             length = findEnd(buf, rlen, suffixs);
@@ -186,32 +196,52 @@ public class HttpSession implements Runnable {
      */
     @Override
     public void run() {
-        mInputStream.mark(BUF_SIZE);
         byte[] buff = new byte[BUF_SIZE];
 
+        mInetAddress = mSocket.getInetAddress();
+        mInputStream.mark(BUF_SIZE);
         try {
-            String[] requestLine = parseRequestLine(mInputStream, buff, BUF_SIZE);
-            Map<String, String> headers = parseHeaderFields(mInputStream, buff, BUF_SIZE);
-
-
-            if (requestLine == null || requestLine.length < 3) {
-                return;
+            while (!mSocket.isClosed()) {
+                HandyHttpd.log("wait for request : " + mInetAddress);
+                waitRequest(buff, BUF_SIZE);
             }
-            HttpRequest request = new HttpRequest(
-                    requestLine[REQUEST_LINE_METHOD],
-                    requestLine[REQUEST_LINE_URI],
-                    requestLine[REQUEST_LINE_VERSION],
-                    headers,
-                    mSocket.getInetAddress());
-
-            HttpResponse response = mServer.onRequest(request);
-            response.send(mOutputStream);
-
-            mInputStream.close();
-            mOutputStream.close();
-            mSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            HandyHttpd.safeClose(mInputStream);
+            HandyHttpd.safeClose(mOutputStream);
+            HandyHttpd.safeClose(mSocket);
+            HandyHttpd.log("disonnect : " + mInetAddress);
         }
+    }
+
+    private void waitRequest(byte[] buff, int size) throws IOException {
+        String[] requestLine = parseRequestLine(mInputStream, buff, size);
+        Map<String, String> headers = parseHeaderFields(mInputStream, buff, size);
+        if (mInetAddress != null && headers != null) {
+            String ip = mInetAddress.isLoopbackAddress() || mInetAddress.isAnyLocalAddress()
+                    ? LOCAL_ADDRESS : mInetAddress.getHostAddress();
+            headers.put("remote-addr", ip);
+            headers.put("http-client-ip", ip);
+        }
+
+        if (requestLine == null || requestLine.length < 3) {
+            return;
+        }
+        HttpRequest request = new HttpRequest(
+                requestLine[REQUEST_LINE_METHOD],
+                requestLine[REQUEST_LINE_URI],
+                requestLine[REQUEST_LINE_VERSION],
+                headers,
+                mInetAddress);
+
+        HttpResponse response = mServer.onRequest(request);
+        String connection = request.getHeaders().get("connection");
+        if ("HTTP/1.1".equals(request.getVersion())
+                && (connection == null || !connection.contains("close"))) {
+            response.setKeepAlive(true);
+        }
+
+        response.send(mOutputStream);
     }
 }

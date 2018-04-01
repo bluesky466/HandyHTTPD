@@ -19,12 +19,14 @@ public class HttpEngine extends Thread {
     private ServerSocket mServerSocket;
     private IScheduler mScheduler;
     private boolean mIsRunning;
+    private int mKeepAliveTimeout;
     private int mPort;
 
-    public HttpEngine(HandyHttpdServer server, int port, IScheduler scheduler) {
+    public HttpEngine(HandyHttpdServer server, int port, int keepAliveTimeout, IScheduler scheduler) {
         mServer = server;
         mPort = port;
         mScheduler = scheduler;
+        mKeepAliveTimeout = keepAliveTimeout;
     }
 
     @Override
@@ -39,6 +41,7 @@ public class HttpEngine extends Thread {
 
         try {
             mServerSocket = new ServerSocket();
+            mServerSocket.setReuseAddress(true);
             mServerSocket.bind(new InetSocketAddress(mPort));
 
             while (mIsRunning) {
@@ -51,6 +54,9 @@ public class HttpEngine extends Thread {
 
     private void waitClientConnect() throws IOException {
         Socket socket = mServerSocket.accept();
+        if (mKeepAliveTimeout > 0) {
+            socket.setSoTimeout(mKeepAliveTimeout);
+        }
         HttpSession session = new HttpSession(mServer, socket);
         mScheduler.schedule(session);
     }
