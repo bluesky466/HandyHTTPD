@@ -1,7 +1,5 @@
 package me.linjw.handyhttpd;
 
-import java.io.ByteArrayInputStream;
-
 import me.linjw.handyhttpd.httpcore.HttpEngine;
 import me.linjw.handyhttpd.httpcore.HttpRequest;
 import me.linjw.handyhttpd.httpcore.HttpResponse;

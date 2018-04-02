@@ -19,6 +19,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
 import static org.powermock.api.mockito.PowerMockito.mock;
 
 /**
@@ -79,13 +80,13 @@ public class HttpSessionTest {
                 HttpSession.moveDataWithSuffix(is, buf, buf.length, "\r\n\r\n")
         );
 
-        is.reset();
+        is = new ByteArrayInputStream(data.getBytes());
         assertEquals(
                 data.getBytes().length,
                 HttpSession.moveDataWithSuffix(is, buf, buf.length, "\r\n\r\n")
         );
 
-        is.reset();
+        is = new ByteArrayInputStream(data.getBytes());
         assertEquals(
                 0,
                 HttpSession.moveDataWithSuffix(is, buf, buf.length, "\r\r")
@@ -146,6 +147,7 @@ public class HttpSessionTest {
                 "Accept-Encoding: gzip, deflate, br\r\n" +
                 "Accept-Language: zh-CN,zh;q=0.9,en;q=0.8\r\n\r\n";
 
+        header += header;
         Socket socket = mock(Socket.class);
         given(socket.getInputStream()).willReturn(new ByteArrayInputStream(header.getBytes()));
         given(socket.getOutputStream()).willReturn(new ByteArrayOutputStream(0));
@@ -158,7 +160,7 @@ public class HttpSessionTest {
 
         ArgumentCaptor<HttpRequest> arg = ArgumentCaptor.forClass(HttpRequest.class);
 
-        then(server).should().onRequest(arg.capture());
+        then(server).should(times(2)).onRequest(arg.capture());
 
         HttpRequest request = arg.getValue();
         assertEquals("GET", request.getMethod());

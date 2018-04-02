@@ -134,6 +134,7 @@ public class HttpSession implements Runnable {
         if (length > 0 && length < rlen) {
             is.reset();
             is.skip(length);
+            is.mark(bufSize); //mark, make current pos to be the beginning of inputstream.
         }
 
         return length > 0 ? length : 0;
