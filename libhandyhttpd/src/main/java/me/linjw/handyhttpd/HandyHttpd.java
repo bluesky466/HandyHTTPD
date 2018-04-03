@@ -13,7 +13,7 @@ import me.linjw.handyhttpd.httpcore.HttpResponse;
  */
 
 public class HandyHttpd {
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     private static final String TAG = "HandyHttpd";
 
@@ -92,9 +92,20 @@ public class HandyHttpd {
     }
 
     /**
+     * log.
+     *
+     * @param e Exception
+     */
+    public static void log(Exception e) {
+        if (DEBUG) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * print request just for defbug.
      */
-    public static void printRequest(HttpRequest request) {
+    public static void log(HttpRequest request) {
         if (!DEBUG) {
             return;
         }

@@ -181,7 +181,7 @@ public class HttpSession implements Runnable {
                 waitRequest(buff, BUF_SIZE);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            HandyHttpd.log(e);
         } finally {
             HandyHttpd.safeClose(mInputStream);
             HandyHttpd.safeClose(mOutputStream);

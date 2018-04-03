@@ -71,7 +71,7 @@ public class HandyHttpdServer {
      * @return HttpResponse
      */
     public HttpResponse onRequest(HttpRequest request) {
-        HandyHttpd.printRequest(request);
+        HandyHttpd.log(request);
         return HandyHttpd.newResponse(HttpResponse.Status.NOT_FOUND, "404 Not Found");
     }
 }
