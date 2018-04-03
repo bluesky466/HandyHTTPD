@@ -13,7 +13,7 @@ import me.linjw.handyhttpd.scheduler.IScheduler;
 
 @SuppressWarnings("WeakerAccess")
 public class HandyHttpdServer {
-    public static final int DEFAULT_KEEP_ALIVE_TIMEOUT = 5000;
+    public static final int DEFAULT_TIMEOUT = 5000;
 
     private int mPort;
     private HttpEngine mEngine;
@@ -40,13 +40,13 @@ public class HandyHttpdServer {
      * @return is success
      */
     public boolean start() {
-        return start(DEFAULT_KEEP_ALIVE_TIMEOUT);
+        return start(DEFAULT_TIMEOUT);
     }
 
     /**
      * start server.
      *
-     * @param timeout timeout for keepalive
+     * @param timeout timeout
      * @return is success
      */
     public boolean start(int timeout) {
