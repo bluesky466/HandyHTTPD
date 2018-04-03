@@ -3,10 +3,12 @@ package me.linjw.handyhttpd.httpcore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.Map;
 
@@ -104,8 +106,8 @@ public class HttpSessionTest {
                 "Accept-Language: zh-CN,zh;q=0.9,en;q=0.8\r\n\r\n";
 
         InputStream is = new ByteArrayInputStream(headerFields.getBytes());
-        byte[] buf = new byte[1024];
-        Map<String, String> header = HttpSession.parseHeaderFields(is, buf, buf.length);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        Map<String, String> header = HttpSession.parseHeaderFields(reader);
         assertNotNull(header);
         assertEquals("tools.ietf.org", header.get("host"));
         assertEquals("keep-alive", header.get("connection"));
@@ -121,19 +123,13 @@ public class HttpSessionTest {
         String headerFields = "GET /html/rfc2616 HTTP/1.1\r\n";
 
         InputStream is = new ByteArrayInputStream(headerFields.getBytes());
-        byte[] buf = new byte[1024];
 
-        assertEquals(headerFields.getBytes().length, is.available());
-
-        String[] requestLine = HttpSession.parseRequestLine(is, buf, buf.length);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        String[] requestLine = HttpSession.parseRequestLine(reader);
         assertNotNull(requestLine);
         assertEquals("GET", requestLine[HttpSession.REQUEST_LINE_METHOD]);
         assertEquals("/html/rfc2616", requestLine[HttpSession.REQUEST_LINE_URI]);
         assertEquals("HTTP/1.1", requestLine[HttpSession.REQUEST_LINE_VERSION]);
-
-        //this method will skip the InputStream when parse request line,
-        //so InputStream is empty now.
-        assertEquals(0, is.available());
     }
 
     @Test

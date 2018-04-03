@@ -41,51 +41,26 @@ public class HttpSession implements Runnable {
 
     /**
      * parse request line from InputStream.
-     * Notice: this method will skip the InputStream when parse the request line.
      *
-     * @param is      InputStream
-     * @param buf     a temp buffer
-     * @param bufSize buffer size
+     * @param reader reader for request line
      * @return request line: [METHOD,URI,VERSION] or null
      * @throws IOException IOException
      * @see HttpSession#REQUEST_LINE_METHOD
      * @see HttpSession#REQUEST_LINE_URI
      * @see HttpSession#REQUEST_LINE_VERSION
      */
-    public static String[] parseRequestLine(InputStream is, byte[] buf, int bufSize)
-            throws IOException {
-        int lineLength = moveDataWithSuffix(is, buf, bufSize, "\r\n");
-        if (lineLength == 0) {
-            return null;
-        }
-
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(new ByteArrayInputStream(buf, 0, lineLength))
-        );
+    public static String[] parseRequestLine(BufferedReader reader) throws IOException {
         return reader.readLine().split(" ");
     }
 
     /**
      * parse header fields from InputStream.
-     * Notice: this method will skip the InputStream when parse the header fields.
      *
-     * @param is      InputStream
-     * @param buf     a temp buffer
-     * @param bufSize buffer size
+     * @param reader reader for header fields
      * @return headers
      * @throws IOException IOException
      */
-    public static Map<String, String> parseHeaderFields(InputStream is, byte[] buf, int bufSize)
-            throws IOException {
-        int headerEnd = moveDataWithSuffix(is, buf, bufSize, "\r\n\r\n", "\n\n");
-        if (headerEnd == 0) {
-            return new HashMap<>();
-        }
-
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(new ByteArrayInputStream(buf, 0, headerEnd))
-        );
-
+    public static Map<String, String> parseHeaderFields(BufferedReader reader) throws IOException {
         Map<String, String> headers = new HashMap<>();
         String line = reader.readLine();
         while (line != null && !line.trim().isEmpty()) {
@@ -134,7 +109,6 @@ public class HttpSession implements Runnable {
         if (length > 0 && length < rlen) {
             is.reset();
             is.skip(length);
-            is.mark(bufSize); //mark, make current pos to be the beginning of inputstream.
         }
 
         return length > 0 ? length : 0;
@@ -200,10 +174,10 @@ public class HttpSession implements Runnable {
         byte[] buff = new byte[BUF_SIZE];
 
         mInetAddress = mSocket.getInetAddress();
-        mInputStream.mark(BUF_SIZE);
         try {
             while (!mSocket.isClosed()) {
                 HandyHttpd.log("wait for request : " + mInetAddress);
+                mInputStream.mark(BUF_SIZE);
                 waitRequest(buff, BUF_SIZE);
             }
         } catch (IOException e) {
@@ -216,9 +190,15 @@ public class HttpSession implements Runnable {
         }
     }
 
-    private void waitRequest(byte[] buff, int size) throws IOException {
-        String[] requestLine = parseRequestLine(mInputStream, buff, size);
-        Map<String, String> headers = parseHeaderFields(mInputStream, buff, size);
+    private void waitRequest(byte[] buff, int bufSize) throws IOException {
+        int headerEnd = moveDataWithSuffix(mInputStream, buff, bufSize, "\r\n\r\n", "\n\n");
+        BufferedReader reader = new BufferedReader(
+                new InputStreamReader(new ByteArrayInputStream(buff, 0, headerEnd))
+        );
+
+        String[] requestLine = parseRequestLine(reader);
+        Map<String, String> headers = parseHeaderFields(reader);
+
         if (mInetAddress != null && headers != null) {
             String ip = mInetAddress.isLoopbackAddress() || mInetAddress.isAnyLocalAddress()
                     ? LOCAL_ADDRESS : mInetAddress.getHostAddress();
