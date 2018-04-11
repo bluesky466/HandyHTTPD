@@ -43,6 +43,7 @@ public class HandyHttpdServer {
         return start(DEFAULT_TIMEOUT);
     }
 
+
     /**
      * start server.
      *
@@ -50,6 +51,17 @@ public class HandyHttpdServer {
      * @return is success
      */
     public boolean start(int timeout) {
+        return start(timeout, false);
+    }
+
+    /**
+     * start server.
+     *
+     * @param timeout  timeout
+     * @param isDaemon isDaemon
+     * @return is success
+     */
+    public boolean start(int timeout, boolean isDaemon) {
         if (mEngine != null) {
             return false;
         }
@@ -60,6 +72,9 @@ public class HandyHttpdServer {
 
         mEngine = new HttpEngine(this, mPort, timeout, mScheduler);
         mEngine.start();
+        if (isDaemon) {
+            mEngine.setDaemon(true);
+        }
         return true;
     }
 
