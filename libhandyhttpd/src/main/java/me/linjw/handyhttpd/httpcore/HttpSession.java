@@ -7,9 +7,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -209,6 +211,7 @@ public class HttpSession implements Runnable {
         if (requestLine == null || requestLine.length < 3) {
             return;
         }
+        requestLine[REQUEST_LINE_URI] = decodeUrl(requestLine[REQUEST_LINE_URI]);
         HttpRequest request = new HttpRequest(
                 requestLine[REQUEST_LINE_METHOD],
                 requestLine[REQUEST_LINE_URI],
@@ -224,5 +227,21 @@ public class HttpSession implements Runnable {
         }
 
         response.send(mOutputStream);
+    }
+
+    /**
+     * decode the url which might with %.
+     *
+     * @param str url
+     * @return decode str
+     */
+    public static String decodeUrl(String str) {
+        String decoded = null;
+        try {
+            decoded = URLDecoder.decode(str, "UTF8");
+        } catch (UnsupportedEncodingException e) {
+            HandyHttpd.log(e);
+        }
+        return decoded;
     }
 }
