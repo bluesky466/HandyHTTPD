@@ -305,6 +305,9 @@ public class HttpSession implements Runnable {
             return baos.toString();
         } catch (IOException e) {
             HandyHttpd.log(e);
+        } finally {
+            HandyHttpd.safeClose(dos);
+            HandyHttpd.safeClose(baos);
         }
         return null;
     }
