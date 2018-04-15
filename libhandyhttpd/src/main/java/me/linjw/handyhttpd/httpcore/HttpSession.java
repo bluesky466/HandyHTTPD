@@ -3,6 +3,8 @@ package me.linjw.handyhttpd.httpcore;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -218,6 +220,7 @@ public class HttpSession implements Runnable {
                 requestLine[REQUEST_LINE_VERSION],
                 headers,
                 mInetAddress);
+        parseBody(mInputStream, request, buff);
 
         HttpResponse response = mServer.onRequest(request);
         String connection = request.getHeaders().get("connection");
@@ -244,4 +247,79 @@ public class HttpSession implements Runnable {
         }
         return decoded;
     }
+
+    /**
+     * parse http body.
+     *
+     * @param is      InputStream
+     * @param request request
+     * @param buff    buff
+     */
+    public static void parseBody(InputStream is, HttpRequest request, byte[] buff) {
+        if (!HttpRequest.METHOD_POST.equals(request.getMethod())) {
+            return;
+        }
+        String contentType = request.getHeaders().get("content-type");
+        if (contentType == null) {
+            return;
+        }
+
+        String postLine = getStringFromInputStream(is, buff, getBodySize(request));
+        if ("application/x-www-form-urlencoded".equalsIgnoreCase(contentType)) {
+            request.putParams(HttpRequest.parseParams(postLine));
+        } else if (postLine.length() != 0) {
+            request.putParam("postData", postLine);
+        }
+    }
+
+    /**
+     * get String from InputStream.
+     *
+     * @param is   InputStream
+     * @param buff buff
+     * @param size size for is
+     * @return String converted from InputStream
+     */
+    public static String getStringFromInputStream(InputStream is, byte[] buff, long size) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        DataOutputStream dos = new DataOutputStream(baos);
+
+        try {
+            int rlen = 0;
+            if (size >= 0) {
+                while (rlen >= 0 && size > 0) {
+                    rlen = is.read(buff, 0, (int) Math.min(size, buff.length));
+                    if (rlen > 0) {
+                        dos.write(buff, 0, rlen);
+                        size -= rlen;
+                    }
+                }
+            } else {
+                while (rlen >= 0) {
+                    rlen = is.read(buff, 0, buff.length);
+                    if (rlen > 0) {
+                        dos.write(buff, 0, rlen);
+                    }
+                }
+            }
+            return baos.toString();
+        } catch (IOException e) {
+            HandyHttpd.log(e);
+        }
+        return null;
+    }
+
+    /**
+     * get body size.
+     *
+     * @param request request
+     * @return return body size if headers contain content-length,else return -1
+     */
+    public static long getBodySize(HttpRequest request) {
+        if (request.getHeaders().containsKey("content-length")) {
+            return Long.parseLong(request.getHeaders().get("content-length"));
+        }
+        return -1;
+    }
 }
+

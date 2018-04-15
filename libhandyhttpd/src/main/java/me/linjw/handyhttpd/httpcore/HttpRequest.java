@@ -15,6 +15,9 @@ import me.linjw.handyhttpd.HandyHttpdServer;
 
 @SuppressWarnings("WeakerAccess")
 public class HttpRequest {
+    public static final String METHOD_GET = "GET";
+    public static final String METHOD_POST = "POST";
+
     private final String mMethod;
     private final String mUri;
     private final String mVersion;
@@ -25,17 +28,17 @@ public class HttpRequest {
     /**
      * parse params from url query.
      *
-     * @param query url query
+     * @param data data
      * @return params
      */
-    public static Map<String, String> parseParams(String query) {
+    public static Map<String, String> parseParams(String data) {
         Map<String, String> params = new HashMap<>();
 
-        if (query == null || query.isEmpty()) {
+        if (data == null || data.isEmpty()) {
             return params;
         }
 
-        for (String param : query.split("&")) {
+        for (String param : data.split("&")) {
             String[] list = param.split("=");
             if (list.length > 1) {
                 params.put(list[0], list[1]);
@@ -87,5 +90,12 @@ public class HttpRequest {
         return mInetAddress;
     }
 
+    void putParam(String key, String val) {
+        mParams.put(key, val);
+    }
+
+    void putParams(Map<String, String> params) {
+        mParams.putAll(params);
+    }
 }
 
