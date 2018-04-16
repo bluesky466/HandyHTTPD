@@ -217,4 +217,16 @@ public class HttpSessionTest {
         assertEquals("值1", request.getParams().get("参数1"));
         assertEquals("值2", request.getParams().get("参数2"));
     }
+
+    @Test
+    public void getBoundary() {
+        String contentType = "multipart/form-data; boundary=rxU1IcP2kHsJVF37W5; charset=UTF-8";
+        assertEquals("--rxU1IcP2kHsJVF37W5", HttpSession.getBoundary(contentType));
+
+        contentType = "multipart/form-data; boundary = rxU1IcP2kHsJVF37W5; charset=UTF-8";
+        assertEquals("--rxU1IcP2kHsJVF37W5", HttpSession.getBoundary(contentType));
+
+        contentType = "boundary=rxU1IcP2kHsJVF37W5; charset=UTF-8; multipart/form-data";
+        assertEquals("--rxU1IcP2kHsJVF37W5", HttpSession.getBoundary(contentType));
+    }
 }

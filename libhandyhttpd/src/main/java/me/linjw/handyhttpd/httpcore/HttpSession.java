@@ -264,12 +264,41 @@ public class HttpSession implements Runnable {
             return;
         }
 
+        if (contentType.contains("multipart/form-data")) {
+            return;
+        }
+
         String postLine = getStringFromInputStream(is, buff, getBodySize(request));
+        if (postLine == null) {
+            return;
+        }
+
         if ("application/x-www-form-urlencoded".equalsIgnoreCase(contentType)) {
             request.putParams(HttpRequest.parseParams(postLine));
         } else if (postLine.length() != 0) {
             request.putParam("postData", postLine);
         }
+    }
+
+    /**
+     * get boundary from content type.
+     *
+     * @param contentType content type
+     * @return boundary
+     */
+    public static String getBoundary(String contentType) {
+        int begin = contentType.indexOf("boundary");
+        if (begin < 0) {
+            return null;
+        }
+        int end = contentType.indexOf(";", begin);
+        if (end < 0) {
+            end = contentType.length() - 1;
+        }
+        String boundary = contentType.substring(begin, end)
+                .replace(" ", "")
+                .substring("boundary=".length());
+        return "--" + boundary;
     }
 
     /**
