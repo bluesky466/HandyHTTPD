@@ -93,7 +93,7 @@ public class HttpSession implements Runnable {
      * @throws IOException IOException
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public static int moveDataWithSuffix(InputStream is, byte[] buf, int bufSize, String... suffixs)
+    public static int moveDataWithSuffix(InputStream is, byte[] buf, int bufSize, byte[]... suffixs)
             throws IOException {
         int rlen = 0;
         int length = 0;
@@ -126,15 +126,15 @@ public class HttpSession implements Runnable {
      * @param suffixs suffixs list
      * @return the end pos. Notice it is the last index + 1
      */
-    public static int findEnd(final byte[] data, int size, String... suffixs) {
+    public static int findEnd(final byte[] data, int size, byte[]... suffixs) {
         if (suffixs == null || suffixs.length <= 0) {
             return -1;
         }
 
         for (int i = 0; i < size; i++) {
-            for (String suffix : suffixs) {
+            for (byte[] suffix : suffixs) {
                 if (isEqual(data, i, size, suffix)) {
-                    return i + suffix.length();
+                    return i + suffix.length;
                 }
             }
         }
@@ -144,19 +144,19 @@ public class HttpSession implements Runnable {
     /**
      * compare data with string in buf level.
      *
-     * @param data   byte buffer
-     * @param offset begin index of data to compare
-     * @param size   size of data array
-     * @param str    string to compare
+     * @param data      byte buffer
+     * @param offset    begin index of data to compare
+     * @param size      size of data array
+     * @param toCompare string to compare
      * @return is equal or not
      */
-    public static boolean isEqual(final byte[] data, int offset, int size, String str) {
-        if (offset + str.length() - 1 >= size) {
+    public static boolean isEqual(final byte[] data, int offset, int size, byte[] toCompare) {
+        if (offset + toCompare.length - 1 >= size) {
             return false;
         }
 
-        for (int i = 0; i < str.length(); i++) {
-            if (data[offset + i] != str.charAt(i)) {
+        for (int i = 0; i < toCompare.length; i++) {
+            if (data[offset + i] != toCompare[i]) {
                 return false;
             }
         }
@@ -195,7 +195,8 @@ public class HttpSession implements Runnable {
     }
 
     private void waitRequest(byte[] buff, int bufSize) throws IOException {
-        int headerEnd = moveDataWithSuffix(mInputStream, buff, bufSize, "\r\n\r\n", "\n\n");
+        int headerEnd = moveDataWithSuffix(
+                mInputStream, buff, bufSize, "\r\n\r\n".getBytes(), "\n\n".getBytes());
         BufferedReader reader = new BufferedReader(
                 new InputStreamReader(new ByteArrayInputStream(buff, 0, headerEnd))
         );

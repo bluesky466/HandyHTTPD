@@ -34,9 +34,12 @@ public class HttpSessionTest {
         String str = "hello world";
         byte[] bytes = str.getBytes();
 
-        assertTrue(HttpSession.isEqual(bytes, 0, bytes.length, str));
-        assertTrue(HttpSession.isEqual(bytes, "hello ".getBytes().length, bytes.length, "world"));
-        assertFalse(HttpSession.isEqual(bytes, 1, bytes.length, "world"));
+        assertTrue(HttpSession.isEqual(
+                bytes, 0, bytes.length, str.getBytes()));
+        assertTrue(HttpSession.isEqual(
+                bytes, "hello ".getBytes().length, bytes.length, "world".getBytes()));
+        assertFalse(HttpSession.isEqual(
+                bytes, 1, bytes.length, "world".getBytes()));
     }
 
     @Test
@@ -45,22 +48,22 @@ public class HttpSessionTest {
 
         assertEquals(
                 "hello world\r\n".getBytes().length,
-                HttpSession.findEnd(bytes, bytes.length, "\r\n")
+                HttpSession.findEnd(bytes, bytes.length, "\r\n".getBytes())
         );
 
         assertEquals(
                 "hello world\r\nhello world\r\n\r\n".getBytes().length,
-                HttpSession.findEnd(bytes, bytes.length, "\r\n\r\n")
+                HttpSession.findEnd(bytes, bytes.length, "\r\n\r\n".getBytes())
         );
 
         assertEquals(
                 bytes.length,
-                HttpSession.findEnd(bytes, bytes.length, "\n\n")
+                HttpSession.findEnd(bytes, bytes.length, "\n\n".getBytes())
         );
 
         assertEquals(
                 -1,
-                HttpSession.findEnd(bytes, bytes.length, "\r\r")
+                HttpSession.findEnd(bytes, bytes.length, "\r\r".getBytes())
         );
     }
 
@@ -72,26 +75,26 @@ public class HttpSessionTest {
 
         assertEquals(
                 "hello world\r\n".getBytes().length,
-                HttpSession.moveDataWithSuffix(is, buf, buf.length, "\r\n")
+                HttpSession.moveDataWithSuffix(is, buf, buf.length, "\r\n".getBytes())
         );
 
         //this method will skip the InputStream when write data to buf,
         //so 'hello world\r\n' is skiped in the before step.
         assertEquals(
                 "hello world\r\n\r\n".getBytes().length,
-                HttpSession.moveDataWithSuffix(is, buf, buf.length, "\r\n\r\n")
+                HttpSession.moveDataWithSuffix(is, buf, buf.length, "\r\n\r\n".getBytes())
         );
 
         is = new ByteArrayInputStream(data.getBytes());
         assertEquals(
                 data.getBytes().length,
-                HttpSession.moveDataWithSuffix(is, buf, buf.length, "\r\n\r\n")
+                HttpSession.moveDataWithSuffix(is, buf, buf.length, "\r\n\r\n".getBytes())
         );
 
         is = new ByteArrayInputStream(data.getBytes());
         assertEquals(
                 0,
-                HttpSession.moveDataWithSuffix(is, buf, buf.length, "\r\r")
+                HttpSession.moveDataWithSuffix(is, buf, buf.length, "\r\r".getBytes())
         );
     }
 
