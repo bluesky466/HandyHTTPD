@@ -18,6 +18,7 @@ public class HandyHttpdServer {
     private int mPort;
     private HttpEngine mEngine;
     private IScheduler mScheduler;
+    private String mTempFileDir = System.getProperty("java.io.tmpdir");
 
     public HandyHttpdServer(int port) {
         mPort = port;
@@ -70,7 +71,7 @@ public class HandyHttpdServer {
             mScheduler = new FixSizeScheduler();
         }
 
-        mEngine = new HttpEngine(this, mPort, timeout, mScheduler);
+        mEngine = new HttpEngine(this, mPort, timeout, mScheduler, mTempFileDir);
         mEngine.start();
         if (isDaemon) {
             mEngine.setDaemon(true);
@@ -88,5 +89,14 @@ public class HandyHttpdServer {
     public HttpResponse onRequest(HttpRequest request) {
         HandyHttpd.log(request);
         return HandyHttpd.newResponse(HttpResponse.Status.NOT_FOUND, "404 Not Found");
+    }
+
+    /**
+     * set tempfile dir.
+     *
+     * @param tempFileDir tempfile dir
+     */
+    public void setTempFileDir(String tempFileDir) {
+        mTempFileDir = tempFileDir;
     }
 }

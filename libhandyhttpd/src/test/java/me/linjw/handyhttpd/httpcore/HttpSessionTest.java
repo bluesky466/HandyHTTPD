@@ -160,7 +160,7 @@ public class HttpSessionTest {
         HandyHttpdServer server = mock(HandyHttpdServer.class);
         given(server.onRequest(any(HttpRequest.class))).willReturn(response);
 
-        new HttpSession(server, socket).run();
+        new HttpSession(server, socket, ".").run();
 
         ArgumentCaptor<HttpRequest> arg = ArgumentCaptor.forClass(HttpRequest.class);
 
@@ -207,7 +207,7 @@ public class HttpSessionTest {
         HandyHttpdServer server = mock(HandyHttpdServer.class);
         given(server.onRequest(any(HttpRequest.class))).willReturn(response);
 
-        new HttpSession(server, socket).run();
+        new HttpSession(server, socket, ".").run();
 
         ArgumentCaptor<HttpRequest> arg = ArgumentCaptor.forClass(HttpRequest.class);
 

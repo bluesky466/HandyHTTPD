@@ -18,15 +18,21 @@ public class HttpEngine extends Thread {
     private HandyHttpdServer mServer;
     private ServerSocket mServerSocket;
     private IScheduler mScheduler;
+    private String mTempFileDir;
     private boolean mIsRunning;
     private int mKeepAliveTimeout;
     private int mPort;
 
-    public HttpEngine(HandyHttpdServer server, int port, int keepAliveTimeout, IScheduler scheduler) {
+    public HttpEngine(HandyHttpdServer server,
+                      int port,
+                      int keepAliveTimeout,
+                      IScheduler scheduler,
+                      String tempFileDir) {
         mServer = server;
         mPort = port;
         mScheduler = scheduler;
         mKeepAliveTimeout = keepAliveTimeout;
+        mTempFileDir = tempFileDir;
     }
 
     @Override
@@ -57,7 +63,7 @@ public class HttpEngine extends Thread {
         if (mKeepAliveTimeout > 0) {
             socket.setSoTimeout(mKeepAliveTimeout);
         }
-        HttpSession session = new HttpSession(mServer, socket);
+        HttpSession session = new HttpSession(mServer, socket, mTempFileDir);
         mScheduler.schedule(session);
     }
 }
