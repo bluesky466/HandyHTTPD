@@ -163,76 +163,6 @@ public class HttpSession implements Runnable {
         return true;
     }
 
-    public HttpSession(HandyHttpdServer server, Socket socket) throws IOException {
-        mServer = server;
-        mSocket = socket;
-        mInputStream = new BufferedInputStream(socket.getInputStream());
-        mOutputStream = socket.getOutputStream();
-    }
-
-    /**
-     * read http request and send http response in a subthread.
-     */
-    @Override
-    public void run() {
-        byte[] buff = new byte[BUF_SIZE];
-
-        mInetAddress = mSocket.getInetAddress();
-        try {
-            while (!mSocket.isClosed()) {
-                HandyHttpd.log("wait for request : " + mInetAddress);
-                mInputStream.mark(BUF_SIZE);
-                waitRequest(buff, BUF_SIZE);
-            }
-        } catch (IOException e) {
-            HandyHttpd.log(e);
-        } finally {
-            HandyHttpd.safeClose(mInputStream);
-            HandyHttpd.safeClose(mOutputStream);
-            HandyHttpd.safeClose(mSocket);
-            HandyHttpd.log("disonnect : " + mInetAddress);
-        }
-    }
-
-    private void waitRequest(byte[] buff, int bufSize) throws IOException {
-        int headerEnd = moveDataWithSuffix(
-                mInputStream, buff, bufSize, "\r\n\r\n".getBytes(), "\n\n".getBytes());
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(new ByteArrayInputStream(buff, 0, headerEnd))
-        );
-
-        String[] requestLine = parseRequestLine(reader);
-        Map<String, String> headers = parseHeaderFields(reader);
-
-        if (mInetAddress != null && headers != null) {
-            String ip = mInetAddress.isLoopbackAddress() || mInetAddress.isAnyLocalAddress()
-                    ? LOCAL_ADDRESS : mInetAddress.getHostAddress();
-            headers.put("remote-addr", ip);
-            headers.put("http-client-ip", ip);
-        }
-
-        if (requestLine == null || requestLine.length < 3) {
-            return;
-        }
-        requestLine[REQUEST_LINE_URI] = decodeUrl(requestLine[REQUEST_LINE_URI]);
-        HttpRequest request = new HttpRequest(
-                requestLine[REQUEST_LINE_METHOD],
-                requestLine[REQUEST_LINE_URI],
-                requestLine[REQUEST_LINE_VERSION],
-                headers,
-                mInetAddress);
-        parseBody(mInputStream, request, buff);
-
-        HttpResponse response = mServer.onRequest(request);
-        String connection = request.getHeaders().get("connection");
-        if ("HTTP/1.1".equals(request.getVersion())
-                && (connection == null || !connection.contains("close"))) {
-            response.setKeepAlive(true);
-        }
-
-        response.send(mOutputStream);
-    }
-
     /**
      * decode the url which might with %.
      *
@@ -260,12 +190,9 @@ public class HttpSession implements Runnable {
         if (!HttpRequest.METHOD_POST.equals(request.getMethod())) {
             return;
         }
-        String contentType = request.getHeaders().get("content-type");
-        if (contentType == null) {
-            return;
-        }
+        ContentType contentType = new ContentType(request.getHeaders().get("content-type"));
 
-        if (contentType.contains("multipart/form-data")) {
+        if (contentType.isMultipart()) {
             return;
         }
 
@@ -274,7 +201,7 @@ public class HttpSession implements Runnable {
             return;
         }
 
-        if ("application/x-www-form-urlencoded".equalsIgnoreCase(contentType)) {
+        if ("application/x-www-form-urlencoded".equalsIgnoreCase(contentType.getContentType())) {
             request.putParams(HttpRequest.parseParams(postLine));
         } else if (postLine.length() != 0) {
             request.putParam("postData", postLine);
@@ -353,6 +280,76 @@ public class HttpSession implements Runnable {
             return Long.parseLong(request.getHeaders().get("content-length"));
         }
         return -1;
+    }
+
+    public HttpSession(HandyHttpdServer server, Socket socket) throws IOException {
+        mServer = server;
+        mSocket = socket;
+        mInputStream = new BufferedInputStream(socket.getInputStream());
+        mOutputStream = socket.getOutputStream();
+    }
+
+    /**
+     * read http request and send http response in a subthread.
+     */
+    @Override
+    public void run() {
+        byte[] buff = new byte[BUF_SIZE];
+
+        mInetAddress = mSocket.getInetAddress();
+        try {
+            while (!mSocket.isClosed()) {
+                HandyHttpd.log("wait for request : " + mInetAddress);
+                mInputStream.mark(BUF_SIZE);
+                waitRequest(buff, BUF_SIZE);
+            }
+        } catch (IOException e) {
+            HandyHttpd.log(e);
+        } finally {
+            HandyHttpd.safeClose(mInputStream);
+            HandyHttpd.safeClose(mOutputStream);
+            HandyHttpd.safeClose(mSocket);
+            HandyHttpd.log("disonnect : " + mInetAddress);
+        }
+    }
+
+    private void waitRequest(byte[] buff, int bufSize) throws IOException {
+        int headerEnd = moveDataWithSuffix(
+                mInputStream, buff, bufSize, "\r\n\r\n".getBytes(), "\n\n".getBytes());
+        BufferedReader reader = new BufferedReader(
+                new InputStreamReader(new ByteArrayInputStream(buff, 0, headerEnd))
+        );
+
+        String[] requestLine = parseRequestLine(reader);
+        Map<String, String> headers = parseHeaderFields(reader);
+
+        if (mInetAddress != null && headers != null) {
+            String ip = mInetAddress.isLoopbackAddress() || mInetAddress.isAnyLocalAddress()
+                    ? LOCAL_ADDRESS : mInetAddress.getHostAddress();
+            headers.put("remote-addr", ip);
+            headers.put("http-client-ip", ip);
+        }
+
+        if (requestLine == null || requestLine.length < 3) {
+            return;
+        }
+        requestLine[REQUEST_LINE_URI] = decodeUrl(requestLine[REQUEST_LINE_URI]);
+        HttpRequest request = new HttpRequest(
+                requestLine[REQUEST_LINE_METHOD],
+                requestLine[REQUEST_LINE_URI],
+                requestLine[REQUEST_LINE_VERSION],
+                headers,
+                mInetAddress);
+        parseBody(mInputStream, request, buff);
+
+        HttpResponse response = mServer.onRequest(request);
+        String connection = request.getHeaders().get("connection");
+        if ("HTTP/1.1".equals(request.getVersion())
+                && (connection == null || !connection.contains("close"))) {
+            response.setKeepAlive(true);
+        }
+
+        response.send(mOutputStream);
     }
 }
 
