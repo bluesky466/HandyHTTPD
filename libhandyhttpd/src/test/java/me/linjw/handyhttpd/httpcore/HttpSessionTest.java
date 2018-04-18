@@ -137,14 +137,19 @@ public class HttpSessionTest {
 
     @Test
     public void run() throws IOException {
-        String header = "GET /html/rfc2616?key=val HTTP/1.1\r\n" +
+        String header = "POST /html/rfc2616?key1=val1 HTTP/1.1\r\n" +
                 "Host: tools.ietf.org\r\n" +
                 "Connection: keep-alive\r\n" +
                 "Pragma: no-cache\r\n" +
                 "Cache-Control: no-cache\r\n" +
                 "Upgrade-Insecure-Requests: 1\r\n" +
                 "Accept-Encoding: gzip, deflate, br\r\n" +
-                "Accept-Language: zh-CN,zh;q=0.9,en;q=0.8\r\n\r\n";
+                "Accept-Language: zh-CN,zh;q=0.9,en;q=0.8\r\n" +
+                "Content-Language: zh-CN,zh;q=0.9,en;q=0.8\r\n" +
+                "content-type: application/x-www-form-urlencoded\r\n" +
+                "content-length: 19\r\n" +
+                "\r\n" +
+                "key2=val2&key3=val3";
 
         header += header;
         Socket socket = mock(Socket.class);
@@ -162,7 +167,7 @@ public class HttpSessionTest {
         then(server).should(times(2)).onRequest(arg.capture());
 
         HttpRequest request = arg.getValue();
-        assertEquals("GET", request.getMethod());
+        assertEquals("POST", request.getMethod());
         assertEquals("/html/rfc2616", request.getUri());
         assertEquals("HTTP/1.1", request.getVersion());
         assertEquals("tools.ietf.org", request.getHeaders().get("host"));
@@ -172,9 +177,10 @@ public class HttpSessionTest {
         assertEquals("1", request.getHeaders().get("upgrade-insecure-requests"));
         assertEquals("gzip, deflate, br", request.getHeaders().get("accept-encoding"));
         assertEquals("zh-CN,zh;q=0.9,en;q=0.8", request.getHeaders().get("accept-language"));
-        assertEquals("val", request.getParams().get("key"));
+        assertEquals("val1", request.getParams().get("key1"));
+        assertEquals("val2", request.getParams().get("key2"));
+        assertEquals("val3", request.getParams().get("key3"));
     }
-
 
     @Test
     public void runWithPercent() throws IOException {
@@ -182,16 +188,17 @@ public class HttpSessionTest {
                 "?%E5%8F%82%E6%95%B01=%E5%80%BC1" +
                 "&%E5%8F%82%E6%95%B02=%E5%80%BC2";
 
-        String header = "GET " + url + " HTTP/1.1\r\n" +
+        String header = "POST " + url + " HTTP/1.1\r\n" +
                 "Host: tools.ietf.org\r\n" +
                 "Connection: keep-alive\r\n" +
                 "Pragma: no-cache\r\n" +
                 "Cache-Control: no-cache\r\n" +
                 "Upgrade-Insecure-Requests: 1\r\n" +
                 "Accept-Encoding: gzip, deflate, br\r\n" +
-                "Accept-Language: zh-CN,zh;q=0.9,en;q=0.8\r\n\r\n";
+                "Accept-Language: zh-CN,zh;q=0.9,en;q=0.8\r\n" +
+                "\r\n" +
+                "PostBody";
 
-        header += header;
         Socket socket = mock(Socket.class);
         given(socket.getInputStream()).willReturn(new ByteArrayInputStream(header.getBytes()));
         given(socket.getOutputStream()).willReturn(new ByteArrayOutputStream(0));
@@ -204,10 +211,10 @@ public class HttpSessionTest {
 
         ArgumentCaptor<HttpRequest> arg = ArgumentCaptor.forClass(HttpRequest.class);
 
-        then(server).should(times(2)).onRequest(arg.capture());
+        then(server).should(times(1)).onRequest(arg.capture());
 
         HttpRequest request = arg.getValue();
-        assertEquals("GET", request.getMethod());
+        assertEquals("POST", request.getMethod());
         assertEquals("/路径路径", request.getUri());
         assertEquals("HTTP/1.1", request.getVersion());
         assertEquals("tools.ietf.org", request.getHeaders().get("host"));
@@ -219,6 +226,7 @@ public class HttpSessionTest {
         assertEquals("zh-CN,zh;q=0.9,en;q=0.8", request.getHeaders().get("accept-language"));
         assertEquals("值1", request.getParams().get("参数1"));
         assertEquals("值2", request.getParams().get("参数2"));
+        assertEquals("PostBody", request.getParams().get("postData"));
     }
 
     @Test
