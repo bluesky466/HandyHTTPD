@@ -12,8 +12,6 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.Map;
 
-import me.linjw.handyhttpd.HandyHttpdServer;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -157,7 +155,7 @@ public class HttpSessionTest {
         given(socket.getOutputStream()).willReturn(new ByteArrayOutputStream(0));
 
         HttpResponse response = mock(HttpResponse.class);
-        HandyHttpdServer server = mock(HandyHttpdServer.class);
+        HttpServer server = mock(HttpServer.class);
         given(server.onRequest(any(HttpRequest.class))).willReturn(response);
 
         new HttpSession(server, socket, ".").run();
@@ -204,7 +202,7 @@ public class HttpSessionTest {
         given(socket.getOutputStream()).willReturn(new ByteArrayOutputStream(0));
 
         HttpResponse response = mock(HttpResponse.class);
-        HandyHttpdServer server = mock(HandyHttpdServer.class);
+        HttpServer server = mock(HttpServer.class);
         given(server.onRequest(any(HttpRequest.class))).willReturn(response);
 
         new HttpSession(server, socket, ".").run();

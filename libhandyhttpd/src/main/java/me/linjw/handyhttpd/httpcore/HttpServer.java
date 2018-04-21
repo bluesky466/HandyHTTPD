@@ -1,13 +1,11 @@
-package me.linjw.handyhttpd;
+package me.linjw.handyhttpd.httpcore;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import me.linjw.handyhttpd.httpcore.HttpRequest;
-import me.linjw.handyhttpd.httpcore.HttpResponse;
-import me.linjw.handyhttpd.httpcore.HttpSession;
+import me.linjw.handyhttpd.HandyHttpd;
 import me.linjw.handyhttpd.scheduler.FixSizeScheduler;
 import me.linjw.handyhttpd.scheduler.IScheduler;
 
@@ -17,24 +15,21 @@ import me.linjw.handyhttpd.scheduler.IScheduler;
  */
 
 @SuppressWarnings("WeakerAccess")
-public class HandyHttpdServer {
-    public static final int DEFAULT_TIMEOUT = 5000;
-
-    private int mPort;
+public class HttpServer {
+    private int mTimeout;
+    private boolean mIsDaemon;
     private HttpEngine mHttpEngine;
     private IScheduler mScheduler;
     private String mTempFileDir = System.getProperty("java.io.tmpdir");
 
-    public HandyHttpdServer(int port) {
-        mPort = port;
-    }
-
-    /**
-     * set scheduler.
-     *
-     * @param scheduler scheduler
-     */
-    public void setScheduler(IScheduler scheduler) {
+    public HttpServer(
+            int timeout,
+            boolean isDaemon,
+            String tempFileDir,
+            IScheduler scheduler) {
+        mTimeout = timeout;
+        mIsDaemon = isDaemon;
+        mTempFileDir = tempFileDir;
         mScheduler = scheduler;
     }
 
@@ -43,28 +38,7 @@ public class HandyHttpdServer {
      *
      * @return is success
      */
-    public boolean start() {
-        return start(DEFAULT_TIMEOUT);
-    }
-
-    /**
-     * start server.
-     *
-     * @param timeout timeout
-     * @return is success
-     */
-    public boolean start(int timeout) {
-        return start(timeout, false);
-    }
-
-    /**
-     * start server.
-     *
-     * @param timeout  timeout
-     * @param isDaemon isDaemon
-     * @return is success
-     */
-    public boolean start(int timeout, boolean isDaemon) {
+    public boolean start(int port) {
         if (mHttpEngine != null) {
             return false;
         }
@@ -73,8 +47,8 @@ public class HandyHttpdServer {
             mScheduler = new FixSizeScheduler();
         }
 
-        mHttpEngine = new HttpEngine(timeout);
-        mHttpEngine.setDaemon(isDaemon);
+        mHttpEngine = new HttpEngine(port, mTimeout);
+        mHttpEngine.setDaemon(mIsDaemon);
         mHttpEngine.start();
 
         return true;
@@ -87,29 +61,22 @@ public class HandyHttpdServer {
      * @param request http request
      * @return HttpResponse
      */
-    public HttpResponse onRequest(HttpRequest request) {
+    HttpResponse onRequest(HttpRequest request) {
         HandyHttpd.log(request);
         return HandyHttpd.newResponse(HttpResponse.Status.NOT_FOUND, "404 Not Found");
-    }
-
-    /**
-     * set tempfile dir.
-     *
-     * @param tempFileDir tempfile dir
-     */
-    public void setTempFileDir(String tempFileDir) {
-        mTempFileDir = tempFileDir;
     }
 
     /**
      * http engine.
      */
     private final class HttpEngine extends Thread {
-        private boolean mIsRunning;
+        private int mPort;
         private int mTimeout;
+        private boolean mIsRunning;
         private ServerSocket mServerSocket;
 
-        HttpEngine(int timeout) {
+        HttpEngine(int port, int timeout) {
+            mPort = port;
             mTimeout = timeout;
         }
 
@@ -142,7 +109,7 @@ public class HandyHttpdServer {
             if (mTimeout > 0) {
                 socket.setSoTimeout(mTimeout);
             }
-            HttpSession session = new HttpSession(HandyHttpdServer.this, socket, mTempFileDir);
+            HttpSession session = new HttpSession(HttpServer.this, socket, mTempFileDir);
             mScheduler.schedule(session);
         }
     }

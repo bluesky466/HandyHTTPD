@@ -5,7 +5,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -19,7 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import me.linjw.handyhttpd.HandyHttpd;
-import me.linjw.handyhttpd.HandyHttpdServer;
 import me.linjw.handyhttpd.tempfile.TempFileManager;
 
 /**
@@ -38,7 +36,7 @@ public class HttpSession implements Runnable {
 
     public static final String LOCAL_ADDRESS = "127.0.0.1";
 
-    private final HandyHttpdServer mServer;
+    private final HttpServer mServer;
     private final Socket mSocket;
     private final BufferedInputStream mInputStream;
     private final OutputStream mOutputStream;
@@ -284,7 +282,7 @@ public class HttpSession implements Runnable {
         return -1;
     }
 
-    public HttpSession(HandyHttpdServer server, Socket socket, String tempFileDir)
+    public HttpSession(HttpServer server, Socket socket, String tempFileDir)
             throws IOException {
         mServer = server;
         mSocket = socket;

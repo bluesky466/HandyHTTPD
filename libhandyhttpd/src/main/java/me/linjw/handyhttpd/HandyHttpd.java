@@ -7,6 +7,9 @@ import java.util.Map;
 
 import me.linjw.handyhttpd.httpcore.HttpRequest;
 import me.linjw.handyhttpd.httpcore.HttpResponse;
+import me.linjw.handyhttpd.httpcore.HttpServer;
+import me.linjw.handyhttpd.scheduler.FixSizeScheduler;
+import me.linjw.handyhttpd.scheduler.IScheduler;
 
 /**
  * Created by linjw on 18-4-1.
@@ -127,5 +130,68 @@ public class HandyHttpd {
             log(param.getKey() + " = " + param.getValue());
         }
         log("##########################");
+    }
+
+    /**
+     * HttpServerBuilder.
+     */
+    public static final class HttpServerBuilder {
+        private boolean mIsDaemon = false;
+        private int mTimeout = 5000;
+        private String mTempFileDir = System.getProperty("java.io.tmpdir");
+        private IScheduler mScheduler;
+
+        /**
+         * set daemon.
+         *
+         * @param isDaemon isDaemon
+         */
+        public void setDaemon(boolean isDaemon) {
+            mIsDaemon = isDaemon;
+        }
+
+        /**
+         * set timeout.
+         *
+         * @param timeout timeout
+         */
+        public void setTimeout(int timeout) {
+            mTimeout = timeout;
+        }
+
+        /**
+         * set tempFileDir.
+         *
+         * @param tempFileDir tempFileDir
+         */
+        public void setTempFileDir(String tempFileDir) {
+            mTempFileDir = tempFileDir;
+        }
+
+        /**
+         * set Scheduler.
+         *
+         * @param scheduler scheduler
+         */
+        public void setScheduler(IScheduler scheduler) {
+            mScheduler = scheduler;
+        }
+
+        /**
+         * create HttpServer.
+         *
+         * @return HttpServer
+         */
+        public HttpServer create() {
+            if (mScheduler == null) {
+                mScheduler = new FixSizeScheduler();
+            }
+
+            return new HttpServer(
+                    mTimeout,
+                    mIsDaemon,
+                    mTempFileDir,
+                    mScheduler);
+        }
     }
 }

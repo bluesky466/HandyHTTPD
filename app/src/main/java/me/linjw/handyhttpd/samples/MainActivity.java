@@ -3,7 +3,7 @@ package me.linjw.handyhttpd.samples;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
-import me.linjw.handyhttpd.HandyHttpdServer;
+import me.linjw.handyhttpd.HandyHttpd;
 
 public class MainActivity extends AppCompatActivity {
     private static final int PORT = 8888;
@@ -13,6 +13,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        new HandyHttpdServer(PORT).start();
+        new HandyHttpd.HttpServerBuilder()
+                .create()
+                .start(PORT);
     }
 }
