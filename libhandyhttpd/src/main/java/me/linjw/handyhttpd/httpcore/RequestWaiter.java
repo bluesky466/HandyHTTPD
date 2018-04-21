@@ -27,7 +27,7 @@ import me.linjw.handyhttpd.tempfile.TempFileManager;
 
 
 @SuppressWarnings("WeakerAccess")
-public class HttpSession implements Runnable {
+class RequestWaiter implements Runnable {
     public static final int BUF_SIZE = 8 * 1024;
 
     public static final int REQUEST_LINE_METHOD = 0;
@@ -49,11 +49,11 @@ public class HttpSession implements Runnable {
      * @param reader reader for request line
      * @return request line: [METHOD,URI,VERSION] or null
      * @throws IOException IOException
-     * @see HttpSession#REQUEST_LINE_METHOD
-     * @see HttpSession#REQUEST_LINE_URI
-     * @see HttpSession#REQUEST_LINE_VERSION
+     * @see RequestWaiter#REQUEST_LINE_METHOD
+     * @see RequestWaiter#REQUEST_LINE_URI
+     * @see RequestWaiter#REQUEST_LINE_VERSION
      */
-    public static String[] parseRequestLine(BufferedReader reader) throws IOException {
+    static String[] parseRequestLine(BufferedReader reader) throws IOException {
         return reader.readLine().split(" ");
     }
 
@@ -64,7 +64,7 @@ public class HttpSession implements Runnable {
      * @return headers
      * @throws IOException IOException
      */
-    public static Map<String, String> parseHeaderFields(BufferedReader reader) throws IOException {
+    static Map<String, String> parseHeaderFields(BufferedReader reader) throws IOException {
         Map<String, String> headers = new HashMap<>();
         String line = reader.readLine();
         while (line != null && !line.trim().isEmpty()) {
@@ -93,7 +93,7 @@ public class HttpSession implements Runnable {
      * @throws IOException IOException
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public static int moveDataWithSuffix(InputStream is, byte[] buf, int bufSize, byte[]... suffixs)
+    static int moveDataWithSuffix(InputStream is, byte[] buf, int bufSize, byte[]... suffixs)
             throws IOException {
         int rlen = 0;
         int length = 0;
@@ -126,7 +126,7 @@ public class HttpSession implements Runnable {
      * @param suffixs suffixs list
      * @return the end pos. Notice it is the last index + 1
      */
-    public static int findEnd(final byte[] data, int size, byte[]... suffixs) {
+    static int findEnd(final byte[] data, int size, byte[]... suffixs) {
         if (suffixs == null || suffixs.length <= 0) {
             return -1;
         }
@@ -150,7 +150,7 @@ public class HttpSession implements Runnable {
      * @param toCompare string to compare
      * @return is equal or not
      */
-    public static boolean isEqual(final byte[] data, int offset, int size, byte[] toCompare) {
+    static boolean isEqual(final byte[] data, int offset, int size, byte[] toCompare) {
         if (offset + toCompare.length - 1 >= size) {
             return false;
         }
@@ -169,7 +169,7 @@ public class HttpSession implements Runnable {
      * @param str url
      * @return decode str
      */
-    public static String decodeUrl(String str) {
+    static String decodeUrl(String str) {
         String decoded = null;
         try {
             decoded = URLDecoder.decode(str, "UTF8");
@@ -186,7 +186,7 @@ public class HttpSession implements Runnable {
      * @param request request
      * @param buff    buff
      */
-    public static void parseBody(InputStream is, HttpRequest request, byte[] buff) {
+    static void parseBody(InputStream is, HttpRequest request, byte[] buff) {
         if (!HttpRequest.METHOD_POST.equals(request.getMethod())) {
             return;
         }
@@ -214,7 +214,7 @@ public class HttpSession implements Runnable {
      * @param contentType content type
      * @return boundary
      */
-    public static String getBoundary(String contentType) {
+    static String getBoundary(String contentType) {
         int begin = contentType.indexOf("boundary");
         if (begin < 0) {
             return null;
@@ -237,7 +237,7 @@ public class HttpSession implements Runnable {
      * @param size size for is
      * @return String converted from InputStream
      */
-    public static String getStringFromInputStream(InputStream is, byte[] buff, long size) {
+    static String getStringFromInputStream(InputStream is, byte[] buff, long size) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
 
@@ -275,14 +275,14 @@ public class HttpSession implements Runnable {
      * @param request request
      * @return return body size if headers contain content-length,else return -1
      */
-    public static long getBodySize(HttpRequest request) {
+    static long getBodySize(HttpRequest request) {
         if (request.getHeaders().containsKey("content-length")) {
             return Long.parseLong(request.getHeaders().get("content-length"));
         }
         return -1;
     }
 
-    public HttpSession(HttpServer server, Socket socket, String tempFileDir)
+    RequestWaiter(HttpServer server, Socket socket, String tempFileDir)
             throws IOException {
         mServer = server;
         mSocket = socket;
@@ -350,9 +350,7 @@ public class HttpSession implements Runnable {
                 && (connection == null || !connection.contains("close"))) {
             response.setKeepAlive(true);
         }
-
         response.send(mOutputStream);
     }
-
 }
 

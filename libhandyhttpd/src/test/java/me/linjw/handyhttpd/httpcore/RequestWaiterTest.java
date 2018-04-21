@@ -26,17 +26,17 @@ import static org.powermock.api.mockito.PowerMockito.mock;
  * Created by linjiawei on 2018/3/31.
  * e-mail : bluesky466@qq.com
  */
-public class HttpSessionTest {
+public class RequestWaiterTest {
     @Test
     public void isEqual() {
         String str = "hello world";
         byte[] bytes = str.getBytes();
 
-        assertTrue(HttpSession.isEqual(
+        assertTrue(RequestWaiter.isEqual(
                 bytes, 0, bytes.length, str.getBytes()));
-        assertTrue(HttpSession.isEqual(
+        assertTrue(RequestWaiter.isEqual(
                 bytes, "hello ".getBytes().length, bytes.length, "world".getBytes()));
-        assertFalse(HttpSession.isEqual(
+        assertFalse(RequestWaiter.isEqual(
                 bytes, 1, bytes.length, "world".getBytes()));
     }
 
@@ -46,22 +46,22 @@ public class HttpSessionTest {
 
         assertEquals(
                 "hello world\r\n".getBytes().length,
-                HttpSession.findEnd(bytes, bytes.length, "\r\n".getBytes())
+                RequestWaiter.findEnd(bytes, bytes.length, "\r\n".getBytes())
         );
 
         assertEquals(
                 "hello world\r\nhello world\r\n\r\n".getBytes().length,
-                HttpSession.findEnd(bytes, bytes.length, "\r\n\r\n".getBytes())
+                RequestWaiter.findEnd(bytes, bytes.length, "\r\n\r\n".getBytes())
         );
 
         assertEquals(
                 bytes.length,
-                HttpSession.findEnd(bytes, bytes.length, "\n\n".getBytes())
+                RequestWaiter.findEnd(bytes, bytes.length, "\n\n".getBytes())
         );
 
         assertEquals(
                 -1,
-                HttpSession.findEnd(bytes, bytes.length, "\r\r".getBytes())
+                RequestWaiter.findEnd(bytes, bytes.length, "\r\r".getBytes())
         );
     }
 
@@ -73,26 +73,26 @@ public class HttpSessionTest {
 
         assertEquals(
                 "hello world\r\n".getBytes().length,
-                HttpSession.moveDataWithSuffix(is, buf, buf.length, "\r\n".getBytes())
+                RequestWaiter.moveDataWithSuffix(is, buf, buf.length, "\r\n".getBytes())
         );
 
         //this method will skip the InputStream when write data to buf,
         //so 'hello world\r\n' is skiped in the before step.
         assertEquals(
                 "hello world\r\n\r\n".getBytes().length,
-                HttpSession.moveDataWithSuffix(is, buf, buf.length, "\r\n\r\n".getBytes())
+                RequestWaiter.moveDataWithSuffix(is, buf, buf.length, "\r\n\r\n".getBytes())
         );
 
         is = new ByteArrayInputStream(data.getBytes());
         assertEquals(
                 data.getBytes().length,
-                HttpSession.moveDataWithSuffix(is, buf, buf.length, "\r\n\r\n".getBytes())
+                RequestWaiter.moveDataWithSuffix(is, buf, buf.length, "\r\n\r\n".getBytes())
         );
 
         is = new ByteArrayInputStream(data.getBytes());
         assertEquals(
                 0,
-                HttpSession.moveDataWithSuffix(is, buf, buf.length, "\r\r".getBytes())
+                RequestWaiter.moveDataWithSuffix(is, buf, buf.length, "\r\r".getBytes())
         );
     }
 
@@ -108,7 +108,7 @@ public class HttpSessionTest {
 
         InputStream is = new ByteArrayInputStream(headerFields.getBytes());
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        Map<String, String> header = HttpSession.parseHeaderFields(reader);
+        Map<String, String> header = RequestWaiter.parseHeaderFields(reader);
         assertNotNull(header);
         assertEquals("tools.ietf.org", header.get("host"));
         assertEquals("keep-alive", header.get("connection"));
@@ -126,11 +126,11 @@ public class HttpSessionTest {
         InputStream is = new ByteArrayInputStream(headerFields.getBytes());
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        String[] requestLine = HttpSession.parseRequestLine(reader);
+        String[] requestLine = RequestWaiter.parseRequestLine(reader);
         assertNotNull(requestLine);
-        assertEquals("GET", requestLine[HttpSession.REQUEST_LINE_METHOD]);
-        assertEquals("/html/rfc2616", requestLine[HttpSession.REQUEST_LINE_URI]);
-        assertEquals("HTTP/1.1", requestLine[HttpSession.REQUEST_LINE_VERSION]);
+        assertEquals("GET", requestLine[RequestWaiter.REQUEST_LINE_METHOD]);
+        assertEquals("/html/rfc2616", requestLine[RequestWaiter.REQUEST_LINE_URI]);
+        assertEquals("HTTP/1.1", requestLine[RequestWaiter.REQUEST_LINE_VERSION]);
     }
 
     @Test
@@ -158,7 +158,7 @@ public class HttpSessionTest {
         HttpServer server = mock(HttpServer.class);
         given(server.onRequest(any(HttpRequest.class))).willReturn(response);
 
-        new HttpSession(server, socket, ".").run();
+        new RequestWaiter(server, socket, ".").run();
 
         ArgumentCaptor<HttpRequest> arg = ArgumentCaptor.forClass(HttpRequest.class);
 
@@ -205,7 +205,7 @@ public class HttpSessionTest {
         HttpServer server = mock(HttpServer.class);
         given(server.onRequest(any(HttpRequest.class))).willReturn(response);
 
-        new HttpSession(server, socket, ".").run();
+        new RequestWaiter(server, socket, ".").run();
 
         ArgumentCaptor<HttpRequest> arg = ArgumentCaptor.forClass(HttpRequest.class);
 
@@ -230,12 +230,12 @@ public class HttpSessionTest {
     @Test
     public void getBoundary() {
         String contentType = "multipart/form-data; boundary=rxU1IcP2kHsJVF37W5; charset=UTF-8";
-        assertEquals("--rxU1IcP2kHsJVF37W5", HttpSession.getBoundary(contentType));
+        assertEquals("--rxU1IcP2kHsJVF37W5", RequestWaiter.getBoundary(contentType));
 
         contentType = "multipart/form-data; boundary = rxU1IcP2kHsJVF37W5; charset=UTF-8";
-        assertEquals("--rxU1IcP2kHsJVF37W5", HttpSession.getBoundary(contentType));
+        assertEquals("--rxU1IcP2kHsJVF37W5", RequestWaiter.getBoundary(contentType));
 
         contentType = "boundary=rxU1IcP2kHsJVF37W5; charset=UTF-8; multipart/form-data";
-        assertEquals("--rxU1IcP2kHsJVF37W5", HttpSession.getBoundary(contentType));
+        assertEquals("--rxU1IcP2kHsJVF37W5", RequestWaiter.getBoundary(contentType));
     }
 }

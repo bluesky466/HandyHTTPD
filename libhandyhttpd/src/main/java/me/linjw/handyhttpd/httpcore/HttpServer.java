@@ -109,7 +109,7 @@ public class HttpServer {
             if (mTimeout > 0) {
                 socket.setSoTimeout(mTimeout);
             }
-            HttpSession session = new HttpSession(HttpServer.this, socket, mTempFileDir);
+            RequestWaiter session = new RequestWaiter(HttpServer.this, socket, mTempFileDir);
             mScheduler.schedule(session);
         }
     }
