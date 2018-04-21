@@ -73,7 +73,7 @@ public class HandyHttpd {
      * Log Helper.
      */
     public static final class Log {
-        private static final boolean DEBUG = true;
+        private static final boolean DEBUG = false;
         private static final String TAG = "HandyHttpd";
 
         /**
@@ -117,7 +117,7 @@ public class HandyHttpd {
                 return;
             }
 
-            String method = request.getMethod();
+            String method = request.getMethod().name();
             String uri = request.getUri();
             String version = request.getVersion();
             Map<String, String> headers = request.getHeaders();

@@ -4,6 +4,8 @@ import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 
+import me.linjw.handyhttpd.exception.HandyException;
+
 /**
  * Created by linjiawei on 2018/3/30.
  * e-mail : bluesky466@qq.com
@@ -12,10 +14,7 @@ import java.util.Map;
 
 @SuppressWarnings("WeakerAccess")
 public class HttpRequest {
-    public static final String METHOD_GET = "GET";
-    public static final String METHOD_POST = "POST";
-
-    private final String mMethod;
+    private final Method mMethod;
     private final String mUri;
     private final String mVersion;
     private final Map<String, String> mHeaders;
@@ -48,8 +47,8 @@ public class HttpRequest {
                        String uri,
                        String version,
                        Map<String, String> headers,
-                       InetAddress inetAddress) {
-        mMethod = method;
+                       InetAddress inetAddress) throws HandyException {
+        mMethod = Method.toMethod(method);
         mVersion = version;
         mHeaders = headers;
         mInetAddress = inetAddress;
@@ -63,7 +62,7 @@ public class HttpRequest {
         }
     }
 
-    public String getMethod() {
+    public Method getMethod() {
         return mMethod;
     }
 
@@ -93,6 +92,28 @@ public class HttpRequest {
 
     void putParams(Map<String, String> params) {
         mParams.putAll(params);
+    }
+
+    public enum Method {
+        GET,
+        POST,
+        PUT;
+
+        private static Map<String, Method> sMap = new HashMap<>();
+
+        static {
+            for (Method method : Method.values()) {
+                sMap.put(method.name(), method);
+            }
+        }
+
+        public static Method toMethod(String method) throws HandyException {
+            Method m = sMap.get(method.trim().toUpperCase());
+            if (m == null) {
+                throw new HandyException("can't find method [" + method + "]");
+            }
+            return m;
+        }
     }
 }
 

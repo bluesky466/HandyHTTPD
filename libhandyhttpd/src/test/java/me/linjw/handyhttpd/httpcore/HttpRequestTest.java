@@ -5,6 +5,8 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
+import me.linjw.handyhttpd.exception.HandyException;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -13,7 +15,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class HttpRequestTest {
     @Test
-    public void createHttpRequest() {
+    public void createHttpRequest() throws HandyException {
         Map<String, String> headers = new HashMap<>();
         HttpRequest request = new HttpRequest(
                 "GET",
@@ -23,7 +25,7 @@ public class HttpRequestTest {
                 null
         );
 
-        assertEquals("GET", request.getMethod());
+        assertEquals(HttpRequest.Method.GET, request.getMethod());
         assertEquals("/path1/path2", request.getUri());
         assertEquals("HTTP/1.1", request.getVersion());
         assertEquals("val1", request.getParams().get("key1"));

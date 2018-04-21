@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import me.linjw.handyhttpd.HandyHttpd;
+import me.linjw.handyhttpd.exception.HandyException;
 import me.linjw.handyhttpd.tempfile.TempFileManager;
 
 /**
@@ -47,7 +48,7 @@ class RequestWaiter implements Runnable {
      * parse request line from InputStream.
      *
      * @param reader reader for request line
-     * @return request line: [METHOD,URI,VERSION] or null
+     * @return request line: [Method,URI,VERSION] or null
      * @throws IOException IOException
      * @see RequestWaiter#REQUEST_LINE_METHOD
      * @see RequestWaiter#REQUEST_LINE_URI
@@ -187,7 +188,7 @@ class RequestWaiter implements Runnable {
      * @param buff    buff
      */
     static void parseBody(InputStream is, HttpRequest request, byte[] buff) {
-        if (!HttpRequest.METHOD_POST.equals(request.getMethod())) {
+        if (request.getMethod() != HttpRequest.Method.POST) {
             return;
         }
         ContentType contentType = new ContentType(request.getHeaders().get("content-type"));
@@ -307,6 +308,8 @@ class RequestWaiter implements Runnable {
             }
         } catch (IOException e) {
             HandyHttpd.Log.log(e);
+        } catch (HandyException e) {
+            HandyHttpd.Log.log(e);
         } finally {
             HandyHttpd.safeClose(mInputStream);
             HandyHttpd.safeClose(mOutputStream);
@@ -315,7 +318,7 @@ class RequestWaiter implements Runnable {
         }
     }
 
-    private void waitRequest(byte[] buff, int bufSize) throws IOException {
+    private void waitRequest(byte[] buff, int bufSize) throws IOException, HandyException {
         int headerEnd = moveDataWithSuffix(
                 mInputStream, buff, bufSize, "\r\n\r\n".getBytes(), "\n\n".getBytes());
         BufferedReader reader = new BufferedReader(

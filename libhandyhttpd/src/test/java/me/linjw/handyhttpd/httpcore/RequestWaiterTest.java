@@ -165,7 +165,7 @@ public class RequestWaiterTest {
         then(server).should(times(2)).onRequest(arg.capture());
 
         HttpRequest request = arg.getValue();
-        assertEquals("POST", request.getMethod());
+        assertEquals(HttpRequest.Method.POST, request.getMethod());
         assertEquals("/html/rfc2616", request.getUri());
         assertEquals("HTTP/1.1", request.getVersion());
         assertEquals("tools.ietf.org", request.getHeaders().get("host"));
@@ -212,7 +212,7 @@ public class RequestWaiterTest {
         then(server).should(times(1)).onRequest(arg.capture());
 
         HttpRequest request = arg.getValue();
-        assertEquals("POST", request.getMethod());
+        assertEquals(HttpRequest.Method.POST, request.getMethod());
         assertEquals("/路径路径", request.getUri());
         assertEquals("HTTP/1.1", request.getVersion());
         assertEquals("tools.ietf.org", request.getHeaders().get("host"));
