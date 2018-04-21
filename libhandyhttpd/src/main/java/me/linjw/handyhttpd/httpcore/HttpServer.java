@@ -62,7 +62,7 @@ public class HttpServer {
      * @return HttpResponse
      */
     HttpResponse onRequest(HttpRequest request) {
-        HandyHttpd.log(request);
+        HandyHttpd.Log.log(request);
         return HandyHttpd.newResponse(HttpResponse.Status.NOT_FOUND, "404 Not Found");
     }
 
@@ -97,7 +97,7 @@ public class HttpServer {
                     waitClientConnect();
                 }
             } catch (IOException e) {
-                HandyHttpd.log(e);
+                HandyHttpd.Log.log(e);
             }
         }
 

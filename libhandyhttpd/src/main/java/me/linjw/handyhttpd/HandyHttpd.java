@@ -16,10 +16,6 @@ import me.linjw.handyhttpd.scheduler.IScheduler;
  */
 
 public class HandyHttpd {
-    private static final boolean DEBUG = true;
-
-    private static final String TAG = "HandyHttpd";
-
     /**
      * new http response.
      *
@@ -74,62 +70,71 @@ public class HandyHttpd {
     }
 
     /**
-     * log.
-     *
-     * @param message message
+     * Log Helper.
      */
-    public static void log(String message) {
-        log(TAG, message);
-    }
+    public static final class Log {
+        private static final boolean DEBUG = true;
+        private static final String TAG = "HandyHttpd";
 
-    /**
-     * log.
-     *
-     * @param tag     tag
-     * @param message message
-     */
-    public static void log(String tag, String message) {
-        if (DEBUG) {
-            System.out.println("[" + tag + "] " + message);
-        }
-    }
-
-    /**
-     * log.
-     *
-     * @param e Exception
-     */
-    public static void log(Exception e) {
-        if (DEBUG) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * print request just for defbug.
-     */
-    public static void log(HttpRequest request) {
-        if (!DEBUG) {
-            return;
+        /**
+         * log.
+         *
+         * @param message message
+         */
+        public static void log(String message) {
+            log(null, message);
         }
 
-        String method = request.getMethod();
-        String uri = request.getUri();
-        String version = request.getVersion();
-        Map<String, String> headers = request.getHeaders();
-        Map<String, String> params = request.getParams();
+        /**
+         * log.
+         *
+         * @param tag     tag
+         * @param message message
+         */
+        public static void log(String tag, String message) {
+            if (DEBUG) {
+                tag = (tag != null ? TAG + "-" + tag : TAG);
+                System.out.println("[" + tag + "] " + message);
+            }
+        }
 
-        log("########## " + method + " " + uri + " " + version + " ##########");
-        log(request.getInetAddress().toString());
-        log("Headers:");
-        for (Map.Entry<String, String> header : headers.entrySet()) {
-            log(header.getKey() + " : " + header.getValue());
+        /**
+         * log.
+         *
+         * @param e Exception
+         */
+        public static void log(Exception e) {
+            if (DEBUG) {
+                e.printStackTrace();
+            }
         }
-        log("Params:");
-        for (Map.Entry<String, String> param : params.entrySet()) {
-            log(param.getKey() + " = " + param.getValue());
+
+        /**
+         * print request just for defbug.
+         */
+        public static void log(HttpRequest request) {
+            if (!DEBUG) {
+                return;
+            }
+
+            String method = request.getMethod();
+            String uri = request.getUri();
+            String version = request.getVersion();
+            Map<String, String> headers = request.getHeaders();
+            Map<String, String> params = request.getParams();
+
+            log("########## " + method + " " + uri + " " + version + " ##########");
+            log(request.getInetAddress().toString());
+            log("Headers:");
+            for (Map.Entry<String, String> header : headers.entrySet()) {
+                log(header.getKey() + " : " + header.getValue());
+            }
+            log("Params:");
+            for (Map.Entry<String, String> param : params.entrySet()) {
+                log(param.getKey() + " = " + param.getValue());
+            }
+            log("##########################");
         }
-        log("##########################");
     }
 
     /**

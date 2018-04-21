@@ -174,7 +174,7 @@ public class HttpSession implements Runnable {
         try {
             decoded = URLDecoder.decode(str, "UTF8");
         } catch (UnsupportedEncodingException e) {
-            HandyHttpd.log(e);
+            HandyHttpd.Log.log(e);
         }
         return decoded;
     }
@@ -261,7 +261,7 @@ public class HttpSession implements Runnable {
             }
             return baos.toString();
         } catch (IOException e) {
-            HandyHttpd.log(e);
+            HandyHttpd.Log.log(e);
         } finally {
             HandyHttpd.safeClose(dos);
             HandyHttpd.safeClose(baos);
@@ -301,17 +301,17 @@ public class HttpSession implements Runnable {
         mInetAddress = mSocket.getInetAddress();
         try {
             while (!mSocket.isClosed()) {
-                HandyHttpd.log("wait for request : " + mInetAddress);
+                HandyHttpd.Log.log("wait for request : " + mInetAddress);
                 mInputStream.mark(BUF_SIZE);
                 waitRequest(buff, BUF_SIZE);
             }
         } catch (IOException e) {
-            HandyHttpd.log(e);
+            HandyHttpd.Log.log(e);
         } finally {
             HandyHttpd.safeClose(mInputStream);
             HandyHttpd.safeClose(mOutputStream);
             HandyHttpd.safeClose(mSocket);
-            HandyHttpd.log("disonnect : " + mInetAddress);
+            HandyHttpd.Log.log("disonnect : " + mInetAddress);
         }
     }
 
