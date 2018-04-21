@@ -1,8 +1,13 @@
 package me.linjw.handyhttpd;
 
-import me.linjw.handyhttpd.httpcore.HttpEngine;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+
 import me.linjw.handyhttpd.httpcore.HttpRequest;
 import me.linjw.handyhttpd.httpcore.HttpResponse;
+import me.linjw.handyhttpd.httpcore.HttpSession;
 import me.linjw.handyhttpd.scheduler.FixSizeScheduler;
 import me.linjw.handyhttpd.scheduler.IScheduler;
 
@@ -16,14 +21,13 @@ public class HandyHttpdServer {
     public static final int DEFAULT_TIMEOUT = 5000;
 
     private int mPort;
-    private HttpEngine mEngine;
+    private HttpEngine mHttpEngine;
     private IScheduler mScheduler;
     private String mTempFileDir = System.getProperty("java.io.tmpdir");
 
     public HandyHttpdServer(int port) {
         mPort = port;
     }
-
 
     /**
      * set scheduler.
@@ -34,7 +38,6 @@ public class HandyHttpdServer {
         mScheduler = scheduler;
     }
 
-
     /**
      * start server.
      *
@@ -43,7 +46,6 @@ public class HandyHttpdServer {
     public boolean start() {
         return start(DEFAULT_TIMEOUT);
     }
-
 
     /**
      * start server.
@@ -63,7 +65,7 @@ public class HandyHttpdServer {
      * @return is success
      */
     public boolean start(int timeout, boolean isDaemon) {
-        if (mEngine != null) {
+        if (mHttpEngine != null) {
             return false;
         }
 
@@ -71,11 +73,10 @@ public class HandyHttpdServer {
             mScheduler = new FixSizeScheduler();
         }
 
-        mEngine = new HttpEngine(this, mPort, timeout, mScheduler, mTempFileDir);
-        mEngine.start();
-        if (isDaemon) {
-            mEngine.setDaemon(true);
-        }
+        mHttpEngine = new HttpEngine(timeout);
+        mHttpEngine.setDaemon(isDaemon);
+        mHttpEngine.start();
+
         return true;
     }
 
@@ -98,5 +99,51 @@ public class HandyHttpdServer {
      */
     public void setTempFileDir(String tempFileDir) {
         mTempFileDir = tempFileDir;
+    }
+
+    /**
+     * http engine.
+     */
+    private final class HttpEngine extends Thread {
+        private boolean mIsRunning;
+        private int mTimeout;
+        private ServerSocket mServerSocket;
+
+        HttpEngine(int timeout) {
+            mTimeout = timeout;
+        }
+
+        @Override
+        public synchronized void start() {
+            super.start();
+            mIsRunning = true;
+        }
+
+        @Override
+        public void run() {
+            try {
+                mServerSocket = new ServerSocket();
+                mServerSocket.setReuseAddress(true);
+                mServerSocket.bind(new InetSocketAddress(mPort));
+
+                while (mIsRunning) {
+                    waitClientConnect();
+                }
+            } catch (IOException e) {
+                HandyHttpd.log(e);
+            }
+        }
+
+        private void waitClientConnect() throws IOException {
+            Socket socket = mServerSocket.accept();
+            if (socket == null) {
+                return;
+            }
+            if (mTimeout > 0) {
+                socket.setSoTimeout(mTimeout);
+            }
+            HttpSession session = new HttpSession(HandyHttpdServer.this, socket, mTempFileDir);
+            mScheduler.schedule(session);
+        }
     }
 }
