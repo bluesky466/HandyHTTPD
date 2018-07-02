@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -19,7 +20,7 @@ import java.util.Map;
 
 import me.linjw.handyhttpd.HandyHttpd;
 import me.linjw.handyhttpd.exception.HandyException;
-import me.linjw.handyhttpd.tempfile.TempFileManager;
+import me.linjw.handyhttpd.httpcore.multipartbody.MultipartBodyProcessor;
 
 /**
  * Created by linjiawei on 2018/3/30.
@@ -41,8 +42,9 @@ class RequestWaiter implements Runnable {
     private final Socket mSocket;
     private final BufferedInputStream mInputStream;
     private final OutputStream mOutputStream;
-    private final TempFileManager mTempFileManager;
+    private final String mTempFileDir;
     private InetAddress mInetAddress;
+    private MultipartBodyProcessor mMultipartBodyProcessor;
 
     /**
      * parse request line from InputStream.
@@ -183,17 +185,36 @@ class RequestWaiter implements Runnable {
     /**
      * parse http body.
      *
-     * @param is      InputStream
-     * @param request request
-     * @param buff    buff
+     * @param is       InputStream
+     * @param request  request
+     * @param buff     buff
+     * @param cacheDir cacheDir
      */
-    static void parseBody(InputStream is, HttpRequest request, byte[] buff) {
+    static void parseBody(InputStream is,
+                          HttpRequest request,
+                          byte[] buff,
+                          String cacheDir,
+                          MultipartBodyProcessor processor) throws
+            IOException {
         if (request.getMethod() != HttpRequest.Method.POST) {
             return;
         }
         ContentType contentType = new ContentType(request.getHeaders().get("content-type"));
 
         if (contentType.isMultipart()) {
+            int rlen = 0;
+            long size = getBodySize(request);
+
+            Map<String, String> params = new HashMap<>();
+            Map<String, File> files = new HashMap<>();
+            while (rlen >= 0 && size > 0) {
+                rlen = is.read(buff);
+                size -= rlen;
+                processor.setBoundary(contentType.getBoundary());
+                processor.process(buff, rlen, params, files, cacheDir);
+            }
+            request.putParams(params);
+            request.putFiles(files);
             return;
         }
 
@@ -289,7 +310,8 @@ class RequestWaiter implements Runnable {
         mSocket = socket;
         mInputStream = new BufferedInputStream(socket.getInputStream());
         mOutputStream = socket.getOutputStream();
-        mTempFileManager = new TempFileManager(tempFileDir);
+        mTempFileDir = tempFileDir;
+        mMultipartBodyProcessor = new MultipartBodyProcessor();
     }
 
     /**
@@ -345,7 +367,7 @@ class RequestWaiter implements Runnable {
                 requestLine[REQUEST_LINE_VERSION],
                 headers,
                 mInetAddress);
-        parseBody(mInputStream, request, buff);
+        parseBody(mInputStream, request, buff, mTempFileDir, mMultipartBodyProcessor);
 
         HttpResponse response = mServer.onRequest(request);
         String connection = request.getHeaders().get("connection");

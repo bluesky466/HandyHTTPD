@@ -2,6 +2,7 @@ package me.linjw.handyhttpd;
 
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
@@ -122,6 +123,7 @@ public class HandyHttpd {
             String version = request.getVersion();
             Map<String, String> headers = request.getHeaders();
             Map<String, String> params = request.getParams();
+            Map<String, File> files = request.getFiles();
 
             log("########## " + method + " " + uri + " " + version + " ##########");
             log(request.getInetAddress().toString());
@@ -132,6 +134,11 @@ public class HandyHttpd {
             log("Params:");
             for (Map.Entry<String, String> param : params.entrySet()) {
                 log(param.getKey() + " = " + param.getValue());
+            }
+
+            for (Map.Entry<String, File> param : files.entrySet()) {
+                File file = param.getValue();
+                log(param.getKey() + " = " + file.getAbsolutePath() + " size = " + file.length());
             }
             log("##########################");
         }
@@ -151,8 +158,9 @@ public class HandyHttpd {
          *
          * @param isDaemon isDaemon
          */
-        public void setDaemon(boolean isDaemon) {
+        public HttpServerBuilder setDaemon(boolean isDaemon) {
             mIsDaemon = isDaemon;
+            return this;
         }
 
         /**
@@ -160,8 +168,9 @@ public class HandyHttpd {
          *
          * @param timeout timeout
          */
-        public void setTimeout(int timeout) {
+        public HttpServerBuilder setTimeout(int timeout) {
             mTimeout = timeout;
+            return this;
         }
 
         /**
@@ -169,8 +178,9 @@ public class HandyHttpd {
          *
          * @param tempFileDir tempFileDir
          */
-        public void setTempFileDir(String tempFileDir) {
+        public HttpServerBuilder setTempFileDir(String tempFileDir) {
             mTempFileDir = tempFileDir;
+            return this;
         }
 
         /**
@@ -178,8 +188,9 @@ public class HandyHttpd {
          *
          * @param scheduler scheduler
          */
-        public void setScheduler(IScheduler scheduler) {
+        public HttpServerBuilder setScheduler(IScheduler scheduler) {
             mScheduler = scheduler;
+            return this;
         }
 
         /**

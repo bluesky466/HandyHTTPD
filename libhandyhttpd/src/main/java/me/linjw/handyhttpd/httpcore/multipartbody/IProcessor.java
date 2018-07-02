@@ -8,9 +8,16 @@ import java.util.Map;
  */
 
 public interface IProcessor {
-    void process(byte data, Map<String, String> outParams, Map<String, File> outFiles);
+    void process(byte data,
+                 Map<String, String> outParams,
+                 Map<String, File> outFiles,
+                 String cacheDir);
 
-    void process(byte[] datas, int size, Map<String, String> outParams, Map<String, File> outFiles);
+    void process(byte[] datas,
+                 int size,
+                 Map<String, String> outParams,
+                 Map<String, File> outFiles,
+                 String cacheDir);
 
     void reset();
 }

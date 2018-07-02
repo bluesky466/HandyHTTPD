@@ -14,6 +14,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         new HandyHttpd.HttpServerBuilder()
+                .setTempFileDir(getCacheDir().getAbsolutePath())
                 .create()
                 .start(PORT);
     }

@@ -1,5 +1,6 @@
 package me.linjw.handyhttpd.httpcore;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +20,7 @@ public class HttpRequest {
     private final String mVersion;
     private final Map<String, String> mHeaders;
     private final Map<String, String> mParams;
+    private final Map<String, File> mFiles;
     private final InetAddress mInetAddress;
 
     /**
@@ -60,6 +62,7 @@ public class HttpRequest {
             mUri = uri.substring(0, posQuery);
             mParams = parseParams(uri.substring(posQuery + 1));
         }
+        mFiles = new HashMap<>();
     }
 
     public Method getMethod() {
@@ -82,6 +85,10 @@ public class HttpRequest {
         return mParams;
     }
 
+    public Map<String, File> getFiles() {
+        return mFiles;
+    }
+
     public InetAddress getInetAddress() {
         return mInetAddress;
     }
@@ -92,6 +99,14 @@ public class HttpRequest {
 
     void putParams(Map<String, String> params) {
         mParams.putAll(params);
+    }
+
+    void putFile(String name, File file) {
+        mFiles.put(name, file);
+    }
+
+    void putFiles(Map<String, File> files) {
+        mFiles.putAll(files);
     }
 
     public enum Method {
