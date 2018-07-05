@@ -1,1 +1,1 @@
-include ':app', ':libhandyhttpd'
+include ':app', ':libhandyhttpd', ':libhandyhttpd-compiler'

@@ -85,6 +85,10 @@ public class HttpRequest {
         return mParams;
     }
 
+    public String getParam(String key) {
+        return mParams.get(key);
+    }
+
     public Map<String, File> getFiles() {
         return mFiles;
     }

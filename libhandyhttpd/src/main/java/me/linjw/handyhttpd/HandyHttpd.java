@@ -4,8 +4,14 @@ import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 
+import me.linjw.handyhttpd.annotation.GET;
+import me.linjw.handyhttpd.annotation.POST;
+import me.linjw.handyhttpd.annotation.Path;
 import me.linjw.handyhttpd.httpcore.HttpRequest;
 import me.linjw.handyhttpd.httpcore.HttpResponse;
 import me.linjw.handyhttpd.httpcore.HttpServer;
@@ -71,10 +77,34 @@ public class HandyHttpd {
     }
 
     /**
+     * get service handler class simple name.
+     *
+     * @param className  class name
+     * @param methodName method name
+     * @return service handler class name
+     */
+    public static String getServiceHandlerSimpleName(String className, String methodName) {
+        return "HandyHttpd" + "_" + className + "_" + methodName + "_" + "ServiceHandler";
+    }
+
+    /**
+     * get service handler class name.
+     *
+     * @param service    service
+     * @param methodName method name
+     * @return service handler class name
+     */
+    public static String getServiceHandlerName(Class service, String methodName) {
+        return service.getPackage().getName() +
+                "." +
+                getServiceHandlerSimpleName(service.getSimpleName(), methodName);
+    }
+
+    /**
      * Log Helper.
      */
     public static final class Log {
-        private static final boolean DEBUG = false;
+        private static final boolean DEBUG = true;
         private static final String TAG = "HandyHttpd";
 
         /**
@@ -147,7 +177,7 @@ public class HandyHttpd {
     /**
      * HttpServerBuilder.
      */
-    public static final class HttpServerBuilder {
+    public static final class ServerBuilder {
         private boolean mIsDaemon = false;
         private int mTimeout = 5000;
         private String mTempFileDir = System.getProperty("java.io.tmpdir");
@@ -158,7 +188,7 @@ public class HandyHttpd {
          *
          * @param isDaemon isDaemon
          */
-        public HttpServerBuilder setDaemon(boolean isDaemon) {
+        public ServerBuilder setDaemon(boolean isDaemon) {
             mIsDaemon = isDaemon;
             return this;
         }
@@ -168,7 +198,7 @@ public class HandyHttpd {
          *
          * @param timeout timeout
          */
-        public HttpServerBuilder setTimeout(int timeout) {
+        public ServerBuilder setTimeout(int timeout) {
             mTimeout = timeout;
             return this;
         }
@@ -178,7 +208,7 @@ public class HandyHttpd {
          *
          * @param tempFileDir tempFileDir
          */
-        public HttpServerBuilder setTempFileDir(String tempFileDir) {
+        public ServerBuilder setTempFileDir(String tempFileDir) {
             mTempFileDir = tempFileDir;
             return this;
         }
@@ -188,7 +218,7 @@ public class HandyHttpd {
          *
          * @param scheduler scheduler
          */
-        public HttpServerBuilder setScheduler(IScheduler scheduler) {
+        public ServerBuilder setScheduler(IScheduler scheduler) {
             mScheduler = scheduler;
             return this;
         }
@@ -198,16 +228,93 @@ public class HandyHttpd {
          *
          * @return HttpServer
          */
-        public HttpServer create() {
+        public Server create() {
             if (mScheduler == null) {
                 mScheduler = new FixSizeScheduler();
             }
 
-            return new HttpServer(
+            return new Server(
                     mTimeout,
                     mIsDaemon,
                     mTempFileDir,
                     mScheduler);
+        }
+    }
+
+    public static class Server extends HttpServer {
+        private Map<String, IServiceHandler> mPostServices = new HashMap<>();
+        private Map<String, IServiceHandler> mGetServices = new HashMap<>();
+
+        public Server(int timeout, boolean isDaemon, String tempFileDir, IScheduler scheduler) {
+            super(timeout, isDaemon, tempFileDir, scheduler);
+        }
+
+        /**
+         * load service.
+         *
+         * @param service service
+         */
+        public <T> Server loadService(T service) throws
+                ClassNotFoundException,
+                IllegalAccessException,
+                InstantiationException,
+                NoSuchMethodException,
+                InvocationTargetException {
+            for (Method method : service.getClass().getMethods()) {
+                Path annotation = method.getAnnotation(Path.class);
+                GET getFlag = method.getAnnotation(GET.class);
+                POST postFlag = method.getAnnotation(POST.class);
+                if (annotation != null) {
+                    String className = getServiceHandlerName(service.getClass(), method.getName());
+                    Object handler = Class.forName(className)
+                            .getDeclaredConstructor(service.getClass())
+                            .newInstance(service);
+                    registerServiceHandler(
+                            annotation.value(),
+                            (IServiceHandler) handler,
+                            getFlag,
+                            postFlag);
+                }
+            }
+            return this;
+        }
+
+        void registerServiceHandler(String uri,
+                                    IServiceHandler operation,
+                                    GET getFlag,
+                                    POST postFlag) {
+
+            if (getFlag == null && postFlag == null) {
+                Log.log("registerOperation GET " + uri);
+                Log.log("registerOperation POST " + uri);
+                mPostServices.put(uri, operation);
+                mGetServices.put(uri, operation);
+            } else {
+                if (getFlag != null) {
+                    Log.log("registerOperation GET " + uri);
+                    mGetServices.put(uri, operation);
+                }
+
+                if (postFlag != null) {
+                    Log.log("registerOperation POST " + uri);
+                    mPostServices.put(uri, operation);
+                }
+            }
+        }
+
+        @Override
+        protected HttpResponse onRequest(HttpRequest request) {
+            IServiceHandler handler = null;
+            if (request.getMethod() == HttpRequest.Method.GET) {
+                handler = mGetServices.get(request.getUri());
+            } else if (request.getMethod() == HttpRequest.Method.POST) {
+                handler = mPostServices.get(request.getUri());
+            }
+
+            if (handler != null) {
+                return handler.onRequest(request);
+            }
+            return super.onRequest(request);
         }
     }
 }

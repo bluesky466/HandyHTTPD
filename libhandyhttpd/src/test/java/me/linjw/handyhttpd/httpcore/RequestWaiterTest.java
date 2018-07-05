@@ -6,15 +6,15 @@ import org.mockito.ArgumentCaptor;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.Map;
 
-import me.linjw.handyhttpd.httpcore.multipartbody.MultipartBodyProcessor;
+import me.linjw.handyhttpd.HandyHttpd;
+import me.linjw.handyhttpd.annotation.Path;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -232,7 +232,7 @@ public class RequestWaiterTest {
     }
 
     @Test
-    public void getBoundary() {
+    public void getBoundary() throws InterruptedException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         String contentType = "multipart/form-data; boundary=rxU1IcP2kHsJVF37W5; charset=UTF-8";
         assertEquals("--rxU1IcP2kHsJVF37W5", RequestWaiter.getBoundary(contentType));
 

@@ -61,7 +61,7 @@ public class HttpServer {
      * @param request http request
      * @return HttpResponse
      */
-    HttpResponse onRequest(HttpRequest request) {
+    protected HttpResponse onRequest(HttpRequest request) {
         HandyHttpd.Log.log(request);
         return HandyHttpd.newResponse(HttpResponse.Status.NOT_FOUND, "404 Not Found");
     }
