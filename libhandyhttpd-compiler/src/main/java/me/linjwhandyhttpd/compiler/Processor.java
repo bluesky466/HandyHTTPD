@@ -19,12 +19,14 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.tools.JavaFileObject;
 
 import me.linjw.handyhttpd.HandyHttpd;
 import me.linjw.handyhttpd.annotation.Path;
 import me.linjwhandyhttpd.compiler.adaptor.ParamAdaptor;
+import me.linjwhandyhttpd.compiler.adaptor.ResponseAdaptor;
 
 /**
  * Created by linjiawei on 2018/7/4.
@@ -35,6 +37,7 @@ import me.linjwhandyhttpd.compiler.adaptor.ParamAdaptor;
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class Processor extends AbstractProcessor {
     private Map<String, ParamAdaptor> mParamAdaptorMap = new HashMap<>();
+    private Map<String, ResponseAdaptor> mResponseAdaptorMap = new HashMap<>();
     private Elements mElementUtils;
     private Filer mFiler;
 
@@ -73,7 +76,7 @@ public class Processor extends AbstractProcessor {
                 "import me.linjw.handyhttpd.httpcore.HttpResponse;\n\n";
 
         String classCode = "public class " + service + " implements IServiceHandler {\n" +
-                "\tprivate " + clazz + " mService;\n" +
+                "\tprivate " + clazz + " mService;\n\n" +
                 "\tpublic " + service + "(" + clazz + " service) {\n" +
                 "\t\tmService = service;\n" +
                 "\t};\n\n" +
@@ -88,7 +91,7 @@ public class Processor extends AbstractProcessor {
     private String getInvokeCode(ExecutableElement method) {
         Iterator<? extends VariableElement> itParams = method.getParameters().iterator();
         StringBuilder builder = new StringBuilder()
-                .append("\t\tmService.")
+                .append("mService.")
                 .append(method.getSimpleName())
                 .append("(");
 
@@ -104,7 +107,8 @@ public class Processor extends AbstractProcessor {
         }
 
         builder.append(");\n");
-        return builder.toString() + "\t\treturn HandyHttpd.newResponse(HttpResponse.Status.NOT_FOUND, \"404 Not Found\");\n";
+        return getResponseAdaptor(method.getReturnType())
+                .getConvertCode(builder.toString());
     }
 
     private ParamAdaptor getParamAdaptor(VariableElement param) {
@@ -119,7 +123,25 @@ public class Processor extends AbstractProcessor {
                 adaptor = (ParamAdaptor) Class.forName(c).newInstance();
                 mParamAdaptorMap.put(clazz, adaptor);
             } catch (Exception e) {
-                throw new RuntimeException("can't find adaptor for " + clazz + " adaptor : " + c);
+                throw new RuntimeException("do not support for " + clazz + " param");
+            }
+        }
+        return adaptor;
+    }
+
+    private ResponseAdaptor getResponseAdaptor(TypeMirror response) {
+        String clazz = response.toString();
+        if (!clazz.contains(".")) {
+            clazz = Character.toUpperCase(clazz.charAt(0)) + clazz.substring(1);
+        }
+        ResponseAdaptor adaptor = mResponseAdaptorMap.get(clazz);
+        if (adaptor == null) {
+            String c = "me.linjwhandyhttpd.compiler.adaptor.response." + clazz + ".Adaptor";
+            try {
+                adaptor = (ResponseAdaptor) Class.forName(c).newInstance();
+                mResponseAdaptorMap.put(clazz, adaptor);
+            } catch (Exception e) {
+                throw new RuntimeException("do not support for " + clazz + " response");
             }
         }
         return adaptor;

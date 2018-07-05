@@ -29,7 +29,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Path("/test")
-    public void test(String arg) {
+    public String test(String arg) {
         Log.d(TAG, "arg = " + arg);
+        return "";
     }
 }
