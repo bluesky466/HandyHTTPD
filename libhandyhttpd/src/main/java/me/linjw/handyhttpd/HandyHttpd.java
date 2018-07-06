@@ -367,6 +367,7 @@ public class HandyHttpd {
         @Override
         protected HttpResponse onRequest(HttpRequest request) {
             IServiceHandler handler = null;
+            
             if (request.getMethod() == HttpRequest.Method.GET) {
                 handler = mGetServices.get(request.getUri());
             } else if (request.getMethod() == HttpRequest.Method.POST) {
@@ -376,6 +377,7 @@ public class HandyHttpd {
             if (handler != null) {
                 return handler.onRequest(request);
             }
+
             return super.onRequest(request);
         }
     }

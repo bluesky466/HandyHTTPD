@@ -194,16 +194,20 @@ class RequestWaiter implements Runnable {
                           HttpRequest request,
                           byte[] buff,
                           String cacheDir,
-                          MultipartBodyProcessor processor) throws
-            IOException {
+                          MultipartBodyProcessor processor) throws IOException {
         if (request.getMethod() != HttpRequest.Method.POST) {
             return;
         }
+
+        long size = getBodySize(request);
+        if (size <= 0) {
+            return;
+        }
+
         ContentType contentType = new ContentType(request.getHeaders().get("content-type"));
 
         if (contentType.isMultipart()) {
             int rlen = 0;
-            long size = getBodySize(request);
 
             Map<String, String> params = new HashMap<>();
             Map<String, File> files = new HashMap<>();
@@ -218,7 +222,7 @@ class RequestWaiter implements Runnable {
             return;
         }
 
-        String postLine = getStringFromInputStream(is, buff, getBodySize(request));
+        String postLine = getStringFromInputStream(is, buff, size);
         if (postLine == null) {
             return;
         }
@@ -368,8 +372,8 @@ class RequestWaiter implements Runnable {
                 headers,
                 mInetAddress);
         parseBody(mInputStream, request, buff, mTempFileDir, mMultipartBodyProcessor);
-
         HttpResponse response = mServer.onRequest(request);
+
         String connection = request.getHeaders().get("connection");
         if ("HTTP/1.1".equals(request.getVersion())
                 && (connection == null || !connection.contains("close"))) {
