@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.CLASS)
 public @interface Param {
     /**
-     * param name
+     * param name.
      *
      * @return param name
      */

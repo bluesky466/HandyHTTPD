@@ -1,4 +1,4 @@
-package me.linjwhandyhttpd.compiler.adaptor.param.Float;
+package me.linjwhandyhttpd.compiler.adaptor.param.java.lang.Float;
 
 import javax.lang.model.element.VariableElement;
 
@@ -12,6 +12,6 @@ import me.linjwhandyhttpd.compiler.adaptor.ParamAdaptor;
 public class Adaptor extends ParamAdaptor {
     @Override
     public String getConvertCode(String httpRequest, VariableElement param) {
-        return ParamAdaptor.getBasicDataTypeConvertCode(httpRequest, param, "Float", "0.0f");
+        return ParamAdaptor.getBasicDataTypeConvertCode(httpRequest, param, "Float", "null");
     }
 }

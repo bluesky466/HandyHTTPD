@@ -12,10 +12,6 @@ import me.linjwhandyhttpd.compiler.adaptor.ParamAdaptor;
 public class Adaptor extends ParamAdaptor {
     @Override
     public String getConvertCode(String httpRequest, VariableElement param) {
-        String key = ParamAdaptor.getKeyName(param);
-        String map = httpRequest + ".getParams()";
-        return map + ".containsKey(\"" + key + "\")"
-                + "?Byte.parseByte(" + map + ".get(\"" + key + "\"))"
-                + ":0";
+        return ParamAdaptor.getBasicDataTypeConvertCode(httpRequest, param, "Byte", "0");
     }
 }

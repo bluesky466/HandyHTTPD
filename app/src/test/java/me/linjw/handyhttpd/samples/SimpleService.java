@@ -17,13 +17,21 @@ public class SimpleService {
     @Path("/testParm")
     public String testParam(String str,
                             boolean bool,
+                            Boolean Bool,
                             byte b,
+                            Byte B,
                             char c,
+                            Character C,
                             double d,
+                            Double D,
                             float f,
+                            Float F,
                             int i,
+                            Integer I,
                             long l,
-                            short s) {
-        return mTarget.testParam(str, bool, b, c, d, f, i, l, s);
+                            Long L,
+                            short s,
+                            Short S) {
+        return mTarget.testParam(str, bool, Bool, b, B, c, C, d, D, f, F, i, I, l, L, s, S);
     }
 }

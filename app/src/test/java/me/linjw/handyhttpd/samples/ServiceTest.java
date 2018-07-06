@@ -61,12 +61,12 @@ public class ServiceTest {
         accessServicePath("/testParm");
         then(mService)
                 .should()
-                .testParam(null, false, (byte) 0, '\0', 0.0, 0.0f, 0, 0, (short) 0);
+                .testParam(null, false, null, (byte) 0, null, '\0', null, 0.0, null, 0.0f, null, 0, null, 0, null, (short) 0, null);
 
-        accessServicePath("/testParm?str=str&bool=true&b=1&c=a&d=1.23&f=3.21&i=123&l=321&s=111");
+        accessServicePath("/testParm?str=str&bool=true&Bool=false&b=1&B=2&c=a&C=b&d=1.23&D=2.34&f=3.21&F=4.32&i=123&I=456&l=321&L=654&s=111&S=11");
         then(mService)
                 .should()
-                .testParam("str", true, (byte) 1, 'a', 1.23, 3.21f, 123, 321, (short) 111);
+                .testParam("str", true, Boolean.FALSE, (byte) 1, (byte) 2, 'a', 'b', 1.23, 2.34, 3.21f, 4.32f, 123, 456, 321, 654l, (short) 111, (short) 11);
     }
 
     private InputStream accessServicePath(String path) throws IOException {
