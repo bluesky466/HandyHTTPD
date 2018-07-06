@@ -3,6 +3,8 @@ package me.linjw.handyhttpd.samples;
 import java.io.File;
 import java.util.Map;
 
+import me.linjw.handyhttpd.annotation.GET;
+import me.linjw.handyhttpd.annotation.POST;
 import me.linjw.handyhttpd.annotation.Path;
 
 /**
@@ -42,5 +44,29 @@ public class SimpleService {
     @Path("/testParmMap")
     public void testParamMap(Map<String, String> params, Map<String, File> files) {
         mTarget.testParamMap(params, files);
+    }
+
+    @GET
+    @Path("/testMethodGet")
+    public void testMethodGet() {
+        mTarget.testMethodGet();
+    }
+
+    @POST
+    @Path("/testMethodPost")
+    public void testMethodPost() {
+        mTarget.testMethodPost();
+    }
+
+    @GET
+    @POST
+    @Path("/testMethodGetPostAnn")
+    public void testMethodGetPostAnn() {
+        mTarget.testMethodGetPostAnn();
+    }
+
+    @Path("/testMethodGetPostDefault")
+    public void testMethodGetPostDefault() {
+        mTarget.testMethodGetPostDefault();
     }
 }

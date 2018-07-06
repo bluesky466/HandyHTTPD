@@ -9,16 +9,18 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
 
 import me.linjw.handyhttpd.HandyHttpd;
 
+import static junit.framework.Assert.assertEquals;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 
 /**
  * Created by linjiawei on 2018/7/5.
@@ -61,12 +63,12 @@ public class ServiceTest {
 
     @Test
     public void testParam() throws IOException {
-        accessServicePath("/testParm");
+        assertEquals(200, accessServicePath("/testParm", "GET").getResponseCode());
         then(mService)
                 .should()
                 .testParam(null, false, null, (byte) 0, null, '\0', null, 0.0, null, 0.0f, null, 0, null, 0, null, (short) 0, null);
 
-        accessServicePath("/testParm?str=str&bool=true&Bool=false&b=1&B=2&c=a&C=b&d=1.23&D=2.34&f=3.21&F=4.32&i=123&I=456&l=321&L=654&s=111&S=11");
+        assertEquals(200, accessServicePath("/testParm?str=str&bool=true&Bool=false&b=1&B=2&c=a&C=b&d=1.23&D=2.34&f=3.21&F=4.32&i=123&I=456&l=321&L=654&s=111&S=11", "GET").getResponseCode());
         then(mService)
                 .should()
                 .testParam("str", true, Boolean.FALSE, (byte) 1, (byte) 2, 'a', 'b', 1.23, 2.34, 3.21f, 4.32f, 123, 456, 321, 654l, (short) 111, (short) 11);
@@ -74,7 +76,7 @@ public class ServiceTest {
 
     @Test
     public void testParamMap() throws IOException {
-        accessServicePath("/testParmMap");
+        assertEquals(200, accessServicePath("/testParmMap", "GET").getResponseCode());
         then(mService)
                 .should()
                 .testParamMap(new HashMap<String, String>(), new HashMap<String, File>());
@@ -83,19 +85,44 @@ public class ServiceTest {
             put("a", "1");
             put("b", "2");
         }};
-        accessServicePath("/testParmMap?a=1&b=2");
+        assertEquals(200, accessServicePath("/testParmMap?a=1&b=2", "GET").getResponseCode());
         then(mService)
                 .should()
                 .testParamMap(params, new HashMap<String, File>());
     }
 
-    private InputStream accessServicePath(String path) throws IOException {
-        URL url = new URL("http://127.0.0.1:" + PORT + path);
-        URLConnection conn = url.openConnection();
-        conn.setConnectTimeout(1000);
-        conn.setReadTimeout(1000);
-        conn.connect();
+    @Test
+    public void testGetMethod() throws IOException, InterruptedException {
+        assertEquals(404, accessServicePath("/testMethodGet", "POST").getResponseCode());
+        then(mService).should(never()).testMethodGet();
 
-        return conn.getInputStream();
+        assertEquals(200, accessServicePath("/testMethodGet", "GET").getResponseCode());
+        then(mService).should().testMethodGet();
+
+        assertEquals(404, accessServicePath("/testMethodPost", "GET").getResponseCode());
+        then(mService).should(never()).testMethodPost();
+
+        assertEquals(200, accessServicePath("/testMethodPost", "POST").getResponseCode());
+        then(mService).should().testMethodPost();
+
+        assertEquals(200, accessServicePath("/testMethodGetPostAnn", "GET").getResponseCode());
+        assertEquals(200, accessServicePath("/testMethodGetPostAnn", "POST").getResponseCode());
+        then(mService).should(times(2)).testMethodGetPostAnn();
+
+        assertEquals(200, accessServicePath("/testMethodGetPostDefault", "GET").getResponseCode());
+        assertEquals(200, accessServicePath("/testMethodGetPostDefault", "POST").getResponseCode());
+        then(mService).should(times(2)).testMethodGetPostDefault();
+
+    }
+
+
+    private HttpURLConnection accessServicePath(String path, String method) throws IOException {
+        URL url = new URL("http://127.0.0.1:" + PORT + path);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setConnectTimeout(3000);
+        conn.setReadTimeout(3000);
+        conn.setRequestMethod(method);
+        conn.connect();
+        return conn;
     }
 }
