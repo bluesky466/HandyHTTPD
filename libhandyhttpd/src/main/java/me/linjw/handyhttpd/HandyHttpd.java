@@ -6,7 +6,9 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import me.linjw.handyhttpd.annotation.GET;
@@ -56,6 +58,9 @@ public class HandyHttpd {
             HttpResponse.Status status,
             String message,
             String mimeType) {
+        if (message == null) {
+            message = "";
+        }
         return new HttpResponse(
                 status,
                 mimeType,
@@ -104,7 +109,7 @@ public class HandyHttpd {
      * Log Helper.
      */
     public static final class Log {
-        private static final boolean DEBUG = true;
+        private static final boolean DEBUG = false;
         private static final String TAG = "HandyHttpd";
 
         /**
@@ -182,11 +187,13 @@ public class HandyHttpd {
         private int mTimeout = 5000;
         private String mTempFileDir = System.getProperty("java.io.tmpdir");
         private IScheduler mScheduler;
+        private List<Object> mServices = new ArrayList<>();
 
         /**
          * set daemon.
          *
          * @param isDaemon isDaemon
+         * @return ServerBuilder
          */
         public ServerBuilder setDaemon(boolean isDaemon) {
             mIsDaemon = isDaemon;
@@ -197,6 +204,7 @@ public class HandyHttpd {
          * set timeout.
          *
          * @param timeout timeout
+         * @return ServerBuilder
          */
         public ServerBuilder setTimeout(int timeout) {
             mTimeout = timeout;
@@ -207,6 +215,7 @@ public class HandyHttpd {
          * set tempFileDir.
          *
          * @param tempFileDir tempFileDir
+         * @return ServerBuilder
          */
         public ServerBuilder setTempFileDir(String tempFileDir) {
             mTempFileDir = tempFileDir;
@@ -217,6 +226,7 @@ public class HandyHttpd {
          * set Scheduler.
          *
          * @param scheduler scheduler
+         * @return ServerBuilder
          */
         public ServerBuilder setScheduler(IScheduler scheduler) {
             mScheduler = scheduler;
@@ -224,20 +234,69 @@ public class HandyHttpd {
         }
 
         /**
+         * load service.
+         *
+         * @param service service
+         * @param <T>     type
+         * @return ServerBuilder
+         */
+        public <T> ServerBuilder loadService(T service) {
+            mServices.add(service);
+            return this;
+        }
+
+        /**
          * create HttpServer.
          *
          * @return HttpServer
+         * @throws ClassNotFoundException
+         * @throws NoSuchMethodException
+         * @throws InvocationTargetException
+         * @throws InstantiationException
+         * @throws IllegalAccessException
          */
-        public Server create() {
+        public Server create() throws ClassNotFoundException,
+                NoSuchMethodException,
+                InvocationTargetException,
+                InstantiationException,
+                IllegalAccessException {
             if (mScheduler == null) {
                 mScheduler = new FixSizeScheduler();
             }
 
-            return new Server(
+            Server server = new Server(
                     mTimeout,
                     mIsDaemon,
                     mTempFileDir,
                     mScheduler);
+
+            for (Object service : mServices) {
+                server.loadService(service);
+            }
+
+            return server;
+        }
+
+        /**
+         * create and start HttpServer.
+         *
+         * @param port port
+         * @return server
+         * @throws ClassNotFoundException
+         * @throws NoSuchMethodException
+         * @throws InstantiationException
+         * @throws IllegalAccessException
+         * @throws InvocationTargetException
+         */
+        public Server createAndStart(int port) throws
+                ClassNotFoundException,
+                NoSuchMethodException,
+                InstantiationException,
+                IllegalAccessException,
+                InvocationTargetException {
+            Server server = create();
+            server.start(port);
+            return server;
         }
     }
 
@@ -260,11 +319,14 @@ public class HandyHttpd {
                 InstantiationException,
                 NoSuchMethodException,
                 InvocationTargetException {
+
             for (Method method : service.getClass().getMethods()) {
                 Path annotation = method.getAnnotation(Path.class);
                 GET getFlag = method.getAnnotation(GET.class);
                 POST postFlag = method.getAnnotation(POST.class);
+
                 if (annotation != null) {
+
                     String className = getServiceHandlerName(service.getClass(), method.getName());
                     Object handler = Class.forName(className)
                             .getDeclaredConstructor(service.getClass())

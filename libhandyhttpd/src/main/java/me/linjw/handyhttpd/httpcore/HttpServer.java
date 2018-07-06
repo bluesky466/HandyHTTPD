@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.LinkedList;
+import java.util.List;
 
 import me.linjw.handyhttpd.HandyHttpd;
 import me.linjw.handyhttpd.scheduler.FixSizeScheduler;
@@ -55,6 +57,32 @@ public class HttpServer {
     }
 
     /**
+     * stop http server.
+     *
+     * @return is success
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public boolean stop() throws IOException, InterruptedException {
+        if (mHttpEngine == null) {
+            return false;
+        }
+
+        boolean r = mHttpEngine.stopEngine();
+        mHttpEngine.join();
+        return r;
+    }
+
+    /**
+     * is http server ready.
+     *
+     * @return is ready
+     */
+    public boolean isReady() {
+        return mHttpEngine != null && mHttpEngine.isReady();
+    }
+
+    /**
      * this method will be called when recv http request,
      * you can override it to do your work.
      *
@@ -73,11 +101,14 @@ public class HttpServer {
         private int mPort;
         private int mTimeout;
         private boolean mIsRunning;
+        private boolean mIsReady;
         private ServerSocket mServerSocket;
+        private List<RequestWaiter> mWaiters;
 
         HttpEngine(int port, int timeout) {
             mPort = port;
             mTimeout = timeout;
+            mWaiters = new LinkedList<>();
         }
 
         @Override
@@ -92,6 +123,7 @@ public class HttpServer {
                 mServerSocket = new ServerSocket();
                 mServerSocket.setReuseAddress(true);
                 mServerSocket.bind(new InetSocketAddress(mPort));
+                mIsReady = true;
 
                 while (mIsRunning) {
                     waitClientConnect();
@@ -103,6 +135,7 @@ public class HttpServer {
 
         private void waitClientConnect() throws IOException {
             Socket socket = mServerSocket.accept();
+
             if (socket == null) {
                 return;
             }
@@ -110,7 +143,37 @@ public class HttpServer {
                 socket.setSoTimeout(mTimeout);
             }
             RequestWaiter session = new RequestWaiter(HttpServer.this, socket, mTempFileDir);
+            mWaiters.add(session);
             mScheduler.schedule(session);
+        }
+
+        /**
+         * stop engine.
+         *
+         * @return is success
+         * @throws IOException
+         */
+        public boolean stopEngine() throws IOException {
+            if (!mIsRunning || mServerSocket == null) {
+                return false;
+            }
+
+            for (RequestWaiter waiter : mWaiters) {
+                waiter.close();
+            }
+            mServerSocket.close();
+            mIsRunning = false;
+            mIsReady = false;
+            return true;
+        }
+
+        /**
+         * is http engine ready.
+         *
+         * @return is ready
+         */
+        public boolean isReady() {
+            return mIsReady;
         }
     }
 }

@@ -377,5 +377,11 @@ class RequestWaiter implements Runnable {
         }
         response.send(mOutputStream);
     }
+
+    public void close() throws IOException {
+        if (mSocket != null && !mSocket.isClosed()) {
+            mSocket.close();
+        }
+    }
 }
 
