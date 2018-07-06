@@ -14,8 +14,16 @@ public class SimpleService {
         mTarget = target;
     }
 
-    @Path("/test")
-    public String test(String arg) {
-        return mTarget.test(arg);
+    @Path("/testParm")
+    public String testParam(String str,
+                            boolean bool,
+                            byte b,
+                            char c,
+                            double d,
+                            float f,
+                            int i,
+                            long l,
+                            short s) {
+        return mTarget.testParam(str, bool, b, c, d, f, i, l, s);
     }
 }

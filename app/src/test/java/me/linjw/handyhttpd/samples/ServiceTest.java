@@ -58,8 +58,15 @@ public class ServiceTest {
 
     @Test
     public void testParam() throws IOException {
-        accessServicePath("/test");
-        then(mService).should().test(null);
+        accessServicePath("/testParm");
+        then(mService)
+                .should()
+                .testParam(null, false, (byte) 0, '\0', 0.0, 0.0f, 0, 0, (short) 0);
+
+        accessServicePath("/testParm?str=str&bool=true&b=1&c=a&d=1.23&f=3.21&i=123&l=321&s=111");
+        then(mService)
+                .should()
+                .testParam("str", true, (byte) 1, 'a', 1.23, 3.21f, 123, 321, (short) 111);
     }
 
     private InputStream accessServicePath(String path) throws IOException {
