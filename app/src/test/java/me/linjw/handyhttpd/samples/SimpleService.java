@@ -1,5 +1,8 @@
 package me.linjw.handyhttpd.samples;
 
+import java.io.File;
+import java.util.Map;
+
 import me.linjw.handyhttpd.annotation.Path;
 
 /**
@@ -33,5 +36,11 @@ public class SimpleService {
                             short s,
                             Short S) {
         return mTarget.testParam(str, bool, Bool, b, B, c, C, d, D, f, F, i, I, l, L, s, S);
+    }
+
+
+    @Path("/testParmMap")
+    public void testParamMap(Map<String, String> params, Map<String, File> files) {
+        mTarget.testParamMap(params, files);
     }
 }

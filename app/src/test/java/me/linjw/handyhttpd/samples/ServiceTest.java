@@ -7,11 +7,14 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.HashMap;
+import java.util.Map;
 
 import me.linjw.handyhttpd.HandyHttpd;
 
@@ -67,6 +70,23 @@ public class ServiceTest {
         then(mService)
                 .should()
                 .testParam("str", true, Boolean.FALSE, (byte) 1, (byte) 2, 'a', 'b', 1.23, 2.34, 3.21f, 4.32f, 123, 456, 321, 654l, (short) 111, (short) 11);
+    }
+
+    @Test
+    public void testParamMap() throws IOException {
+        accessServicePath("/testParmMap");
+        then(mService)
+                .should()
+                .testParamMap(new HashMap<String, String>(), new HashMap<String, File>());
+
+        Map<String, String> params = new HashMap<String, String>() {{
+            put("a", "1");
+            put("b", "2");
+        }};
+        accessServicePath("/testParmMap?a=1&b=2");
+        then(mService)
+                .should()
+                .testParamMap(params, new HashMap<String, File>());
     }
 
     private InputStream accessServicePath(String path) throws IOException {

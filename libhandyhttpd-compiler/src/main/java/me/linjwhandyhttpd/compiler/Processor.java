@@ -115,6 +115,9 @@ public class Processor extends AbstractProcessor {
         String clazz = param.asType().toString();
         if (!clazz.contains(".")) {
             clazz = Character.toUpperCase(clazz.charAt(0)) + clazz.substring(1);
+        } else if (clazz.contains("<")) {
+            clazz = clazz.substring(0, clazz.indexOf("<")) +
+                    clazz.substring(clazz.lastIndexOf("."), clazz.length() - 1);
         }
         ParamAdaptor adaptor = mParamAdaptorMap.get(clazz);
         if (adaptor == null) {
