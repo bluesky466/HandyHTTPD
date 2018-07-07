@@ -14,7 +14,7 @@ public abstract class ParamAdaptor {
 
     protected static String getKeyName(VariableElement param) {
         Param keyName = param.getAnnotation(Param.class);
-        if (keyName == null) {
+        if (keyName == null || keyName.value().isEmpty()) {
             return param.getSimpleName().toString();
         }
         return keyName.value();

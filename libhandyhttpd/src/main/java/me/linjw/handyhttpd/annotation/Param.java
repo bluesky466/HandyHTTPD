@@ -1,7 +1,6 @@
 package me.linjw.handyhttpd.annotation;
 
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -19,5 +18,5 @@ public @interface Param {
      *
      * @return param name
      */
-    String value();
+    String value() default "";
 }

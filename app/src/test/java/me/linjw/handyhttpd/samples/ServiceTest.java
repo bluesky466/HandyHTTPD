@@ -97,6 +97,19 @@ public class ServiceTest {
     }
 
     @Test
+    public void testParmAnn() throws IOException {
+        assertEquals(200, accessServicePath("/testParmAnn?a=123&b=321", "GET").getResponseCode());
+        then(mService)
+                .should()
+                .testParmAnn("123", null);
+
+        assertEquals(200, accessServicePath("/testParmAnn?a=123&B=321", "GET").getResponseCode());
+        then(mService)
+                .should()
+                .testParmAnn("123", "321");
+    }
+
+    @Test
     public void testParmHttpRequest() throws IOException {
         assertEquals(200, accessServicePath("/testParmHttpRequest", "GET").getResponseCode());
         then(mService)

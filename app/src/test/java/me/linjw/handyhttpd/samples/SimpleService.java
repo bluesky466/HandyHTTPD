@@ -6,6 +6,7 @@ import java.util.Map;
 import me.linjw.handyhttpd.HandyHttpd;
 import me.linjw.handyhttpd.annotation.GET;
 import me.linjw.handyhttpd.annotation.POST;
+import me.linjw.handyhttpd.annotation.Param;
 import me.linjw.handyhttpd.annotation.Path;
 import me.linjw.handyhttpd.httpcore.HttpRequest;
 import me.linjw.handyhttpd.httpcore.HttpResponse;
@@ -43,6 +44,10 @@ public class SimpleService {
         return mTarget.testParam(str, bool, Bool, b, B, c, C, d, D, f, F, i, I, l, L, s, S);
     }
 
+    @Path("/testParmAnn")
+    public void testParmAnn(@Param String a, @Param("B") String b) {
+        mTarget.testParmAnn(a, b);
+    }
 
     @Path("/testParmMap")
     public void testParamMap(Map<String, String> params, Map<String, File> files) {
