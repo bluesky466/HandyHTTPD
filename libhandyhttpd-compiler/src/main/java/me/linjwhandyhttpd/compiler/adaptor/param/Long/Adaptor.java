@@ -12,6 +12,6 @@ import me.linjwhandyhttpd.compiler.adaptor.ParamAdaptor;
 public class Adaptor extends ParamAdaptor {
     @Override
     public String getConvertCode(String httpRequest, VariableElement param) {
-        return ParamAdaptor.getBasicDataTypeConvertCode(httpRequest, param, "Long", "0");
+        return getBasicDataTypeConvertCode(httpRequest, param, "Long", "0");
     }
 }

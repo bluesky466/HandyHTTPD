@@ -2,6 +2,7 @@ package me.linjwhandyhttpd.compiler.adaptor;
 
 import javax.lang.model.element.VariableElement;
 
+import me.linjw.handyhttpd.annotation.Header;
 import me.linjw.handyhttpd.annotation.Param;
 
 /**
@@ -14,10 +15,18 @@ public abstract class ParamAdaptor {
 
     protected static String getKeyName(VariableElement param) {
         Param keyName = param.getAnnotation(Param.class);
-        if (keyName == null || keyName.value().isEmpty()) {
-            return param.getSimpleName().toString();
+        Header header = param.getAnnotation(Header.class);
+        if (header != null && !header.value().isEmpty()) {
+            return header.value();
+        } else if (keyName != null && !keyName.value().isEmpty()) {
+            return keyName.value();
         }
-        return keyName.value();
+        return param.getSimpleName().toString();
+
+    }
+
+    protected static boolean isHeaderParam(VariableElement param) {
+        return param.getAnnotation(Header.class) != null;
     }
 
     protected static String getBasicDataTypeConvertCode(String httpRequest,
@@ -25,7 +34,7 @@ public abstract class ParamAdaptor {
                                                         String type,
                                                         String defaultVal) {
         String key = ParamAdaptor.getKeyName(param);
-        String map = httpRequest + ".getParams()";
+        String map = httpRequest + (isHeaderParam(param) ? ".getHeaders()" : ".getParams()");
         return map + ".containsKey(\"" + key + "\")" +
                 "?" + type + ".parse" + type + "(" + map + ".get(\"" + key + "\"))" +
                 ":" + defaultVal;

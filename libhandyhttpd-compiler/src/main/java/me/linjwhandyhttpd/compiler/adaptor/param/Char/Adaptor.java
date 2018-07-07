@@ -12,8 +12,8 @@ import me.linjwhandyhttpd.compiler.adaptor.ParamAdaptor;
 public class Adaptor extends ParamAdaptor {
     @Override
     public String getConvertCode(String httpRequest, VariableElement param) {
-        String key = ParamAdaptor.getKeyName(param);
-        String map = httpRequest + ".getParams()";
+        String key = getKeyName(param);
+        String map = httpRequest + (isHeaderParam(param) ? ".getHeaders()" : ".getParams()");
         return map + ".containsKey(\"" + key + "\")"
                 + "?" + map + ".get(\"" + key + "\").charAt(0)"
                 + ":'\\0'";

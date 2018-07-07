@@ -13,7 +13,7 @@ public class Adaptor extends ParamAdaptor {
     @Override
     public String getConvertCode(String httpRequest, VariableElement param) {
         String key = ParamAdaptor.getKeyName(param);
-        String map = httpRequest + ".getParams()";
+        String map = httpRequest + (isHeaderParam(param) ? ".getHeaders()" : ".getParams()");
         return map + ".containsKey(\"" + key + "\")"
                 + "?Integer.parseInt(" + map + ".get(\"" + key + "\"))"
                 + ":0";

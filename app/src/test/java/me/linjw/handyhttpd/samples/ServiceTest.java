@@ -4,6 +4,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -23,7 +24,8 @@ import me.linjw.handyhttpd.httpcore.HttpRequest;
 
 import static junit.framework.Assert.assertEquals;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
@@ -110,12 +112,20 @@ public class ServiceTest {
     }
 
     @Test
+    public void testParmHeader() throws IOException {
+        assertEquals(200, accessServicePath("/testParmHeader", "GET").getResponseCode());
+
+        Class c = new HashMap<>().getClass();
+        ArgumentCaptor<? extends HashMap> headers = ArgumentCaptor.forClass(c);
+        then(mService).should().testParmHeader(eq("127.0.0.1:8888"), eq("127.0.0.1"), headers.capture());
+        assertEquals("127.0.0.1", headers.getValue().get("remote-addr"));
+        assertEquals("keep-alive", headers.getValue().get("connection"));
+    }
+
+    @Test
     public void testParmHttpRequest() throws IOException {
         assertEquals(200, accessServicePath("/testParmHttpRequest", "GET").getResponseCode());
-        then(mService)
-                .should()
-                .testParmHttpRequest(any(HttpRequest.class));
-
+        then(mService).should().testParmHttpRequest(notNull(HttpRequest.class));
     }
 
     @Test

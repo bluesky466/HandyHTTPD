@@ -12,7 +12,9 @@ import me.linjwhandyhttpd.compiler.adaptor.ParamAdaptor;
 public class Adaptor extends ParamAdaptor {
     @Override
     public String getConvertCode(String httpRequest, VariableElement param) {
-        String key = ParamAdaptor.getKeyName(param);
-        return httpRequest + ".getParam(\"" + key + "\")";
+        String key = getKeyName(param);
+        return isHeaderParam(param)
+                ? httpRequest + ".getHeader(\"" + key + "\")"
+                : httpRequest + ".getParam(\"" + key + "\")";
     }
 }
