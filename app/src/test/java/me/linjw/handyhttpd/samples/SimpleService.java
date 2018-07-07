@@ -7,6 +7,7 @@ import me.linjw.handyhttpd.HandyHttpd;
 import me.linjw.handyhttpd.annotation.GET;
 import me.linjw.handyhttpd.annotation.POST;
 import me.linjw.handyhttpd.annotation.Path;
+import me.linjw.handyhttpd.httpcore.HttpRequest;
 import me.linjw.handyhttpd.httpcore.HttpResponse;
 
 /**
@@ -46,6 +47,11 @@ public class SimpleService {
     @Path("/testParmMap")
     public void testParamMap(Map<String, String> params, Map<String, File> files) {
         mTarget.testParamMap(params, files);
+    }
+
+    @Path("/testParmHttpRequest")
+    public void testParmHttpRequest(HttpRequest request) {
+        mTarget.testParmHttpRequest(request);
     }
 
     @GET

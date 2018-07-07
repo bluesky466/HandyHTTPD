@@ -19,9 +19,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import me.linjw.handyhttpd.HandyHttpd;
+import me.linjw.handyhttpd.httpcore.HttpRequest;
 
 import static junit.framework.Assert.assertEquals;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
@@ -95,6 +97,15 @@ public class ServiceTest {
     }
 
     @Test
+    public void testParmHttpRequest() throws IOException {
+        assertEquals(200, accessServicePath("/testParmHttpRequest", "GET").getResponseCode());
+        then(mService)
+                .should()
+                .testParmHttpRequest(any(HttpRequest.class));
+
+    }
+
+    @Test
     public void testGetMethod() throws IOException, InterruptedException {
         assertEquals(404, accessServicePath("/testMethodGet", "POST").getResponseCode());
         then(mService).should(never()).testMethodGet();
@@ -125,7 +136,6 @@ public class ServiceTest {
         assertEquals("testStringResponse", inputStreamToString(conn.getInputStream()));
         then(mService).should().testStringResponse();
     }
-
 
     @Test
     public void testHttpResponse() throws IOException {
