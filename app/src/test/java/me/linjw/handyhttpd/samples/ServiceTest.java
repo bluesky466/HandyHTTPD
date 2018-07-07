@@ -7,8 +7,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -112,9 +115,37 @@ public class ServiceTest {
         assertEquals(200, accessServicePath("/testMethodGetPostDefault", "GET").getResponseCode());
         assertEquals(200, accessServicePath("/testMethodGetPostDefault", "POST").getResponseCode());
         then(mService).should(times(2)).testMethodGetPostDefault();
-
     }
 
+    @Test
+    public void testStringResponse() throws IOException {
+        HttpURLConnection conn = accessServicePath("/testStringResponse", "GET");
+
+        assertEquals(200, conn.getResponseCode());
+        assertEquals("testStringResponse", inputStreamToString(conn.getInputStream()));
+        then(mService).should().testStringResponse();
+    }
+
+
+    @Test
+    public void testHttpResponse() throws IOException {
+        HttpURLConnection conn = accessServicePath("/testHttpResponse", "GET");
+
+        assertEquals(301, conn.getResponseCode());
+        assertEquals("Moved Permanently", inputStreamToString(conn.getInputStream()));
+        then(mService).should().testHttpResponse();
+    }
+
+    private String inputStreamToString(InputStream is) throws IOException {
+        StringBuilder builder = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        String line = reader.readLine();
+        while (line != null) {
+            builder.append(line);
+            line = reader.readLine();
+        }
+        return builder.toString();
+    }
 
     private HttpURLConnection accessServicePath(String path, String method) throws IOException {
         URL url = new URL("http://127.0.0.1:" + PORT + path);

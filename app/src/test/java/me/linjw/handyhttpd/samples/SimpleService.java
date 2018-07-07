@@ -3,9 +3,11 @@ package me.linjw.handyhttpd.samples;
 import java.io.File;
 import java.util.Map;
 
+import me.linjw.handyhttpd.HandyHttpd;
 import me.linjw.handyhttpd.annotation.GET;
 import me.linjw.handyhttpd.annotation.POST;
 import me.linjw.handyhttpd.annotation.Path;
+import me.linjw.handyhttpd.httpcore.HttpResponse;
 
 /**
  * Created by linjiawei on 2018/7/5.
@@ -68,5 +70,17 @@ public class SimpleService {
     @Path("/testMethodGetPostDefault")
     public void testMethodGetPostDefault() {
         mTarget.testMethodGetPostDefault();
+    }
+
+    @Path("/testStringResponse")
+    public String testStringResponse() {
+        mTarget.testStringResponse();
+        return "testStringResponse";
+    }
+
+    @Path("/testHttpResponse")
+    public HttpResponse testHttpResponse() {
+        mTarget.testHttpResponse();
+        return HandyHttpd.newResponse(HttpResponse.Status.REDIRECT, "Moved Permanently");
     }
 }
