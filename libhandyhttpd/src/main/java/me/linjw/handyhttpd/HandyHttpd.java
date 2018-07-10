@@ -3,6 +3,8 @@ package me.linjw.handyhttpd;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -66,6 +68,35 @@ public class HandyHttpd {
                 mimeType,
                 new ByteArrayInputStream(message.getBytes()),
                 message.getBytes().length);
+    }
+
+    /**
+     * new http response.
+     *
+     * @param status   status
+     * @param file     file
+     * @param mimeType mimeType
+     * @return HttpResponse
+     */
+    public static HttpResponse newResponse(
+            HttpResponse.Status status,
+            File file,
+            String mimeType) {
+        if (file == null) {
+            return newResponse(HttpResponse.Status.NOT_FOUND, "404 Not Found");
+        }
+
+        try {
+            FileInputStream fis = new FileInputStream(file);
+
+            return new HttpResponse(
+                    status,
+                    mimeType,
+                    fis,
+                    file.length());
+        } catch (FileNotFoundException e) {
+            return newResponse(HttpResponse.Status.NOT_FOUND, "404 Not Found");
+        }
     }
 
     /**

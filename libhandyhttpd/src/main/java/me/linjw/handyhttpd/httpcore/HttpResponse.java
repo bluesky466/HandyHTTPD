@@ -19,6 +19,7 @@ import me.linjw.handyhttpd.HandyHttpd;
 @SuppressWarnings("unused")
 public class HttpResponse {
     public static final String MIME_TYPE_PLAINTEXT = "text/plain";
+    public static final String MIME_TYPE_OCTETSTREAM = "application/octet-stream";
     public static final String MIME_TYPE_HTML = "text/html";
 
     private Status mStatus;
@@ -76,6 +77,7 @@ public class HttpResponse {
             os.write(buff, 0, read);
             read = mData.read(buff, 0, (int) BUFFER_SIZE);
         }
+        mData.close();
     }
 
     public enum Status {
