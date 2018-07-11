@@ -14,7 +14,6 @@ public class Adaptor extends ResponseAdaptor {
         return "\t\tjava.io.File response = " + invokeCode + "\t\t" +
                 "return HandyHttpd.newResponse(" +
                 "HttpResponse.Status.OK, " +
-                "response, " +
-                "HttpResponse.MIME_TYPE_OCTETSTREAM);\n";
+                "response);\n";
     }
 }

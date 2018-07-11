@@ -18,17 +18,13 @@ import me.linjw.handyhttpd.HandyHttpd;
 
 @SuppressWarnings("unused")
 public class HttpResponse {
-    public static final String MIME_TYPE_PLAINTEXT = "text/plain";
-    public static final String MIME_TYPE_OCTETSTREAM = "application/octet-stream";
-    public static final String MIME_TYPE_HTML = "text/html";
-
     private Status mStatus;
     private InputStream mData;
-    private String mMimeType;
+    private MimeType mMimeType;
     private long mDataSize;
     private boolean mKeepAlive;
 
-    public HttpResponse(Status status, String mimeType, InputStream data, long dataSize) {
+    public HttpResponse(Status status, MimeType mimeType, InputStream data, long dataSize) {
         mStatus = status;
         mData = data;
         mDataSize = dataSize;
@@ -57,7 +53,7 @@ public class HttpResponse {
         pw.append("HTTP/1.1 ").append(mStatus.getDescription()).append(" \r\n");
 
         //header fields
-        printHeaderField(pw, "Content-Type", mMimeType);
+        printHeaderField(pw, "Content-Type", mMimeType.getType());
         printHeaderField(pw, "content-length", String.valueOf(mDataSize));
         printHeaderField(pw, "Connection", mKeepAlive ? "keep-alive" : "close");
         pw.append("\r\n");

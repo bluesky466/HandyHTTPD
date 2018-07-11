@@ -19,6 +19,7 @@ import me.linjw.handyhttpd.annotation.Path;
 import me.linjw.handyhttpd.httpcore.HttpRequest;
 import me.linjw.handyhttpd.httpcore.HttpResponse;
 import me.linjw.handyhttpd.httpcore.HttpServer;
+import me.linjw.handyhttpd.httpcore.MimeType;
 import me.linjw.handyhttpd.scheduler.FixSizeScheduler;
 import me.linjw.handyhttpd.scheduler.IScheduler;
 
@@ -45,7 +46,7 @@ public class HandyHttpd {
      * @return HttpResponse
      */
     public static HttpResponse newResponse(HttpResponse.Status status, String message) {
-        return newResponse(status, message, HttpResponse.MIME_TYPE_PLAINTEXT);
+        return newResponse(status, message, MimeType.TEXT_PLAIN);
     }
 
     /**
@@ -59,7 +60,7 @@ public class HandyHttpd {
     public static HttpResponse newResponse(
             HttpResponse.Status status,
             String message,
-            String mimeType) {
+            MimeType mimeType) {
         if (message == null) {
             message = "";
         }
@@ -73,6 +74,24 @@ public class HandyHttpd {
     /**
      * new http response.
      *
+     * @param status status
+     * @param file   file
+     * @return HttpResponse
+     */
+    public static HttpResponse newResponse(
+            HttpResponse.Status status,
+            File file) {
+        if (file == null) {
+            return newResponse(HttpResponse.Status.NOT_FOUND, "404 Not Found");
+        }
+        String name = file.getName();
+        String ext = name.substring(name.lastIndexOf(".") + 1);
+        return newResponse(status, file, MimeType.getMimeTypeByExt(ext));
+    }
+
+    /**
+     * new http response.
+     *
      * @param status   status
      * @param file     file
      * @param mimeType mimeType
@@ -81,7 +100,7 @@ public class HandyHttpd {
     public static HttpResponse newResponse(
             HttpResponse.Status status,
             File file,
-            String mimeType) {
+            MimeType mimeType) {
         if (file == null) {
             return newResponse(HttpResponse.Status.NOT_FOUND, "404 Not Found");
         }
