@@ -194,6 +194,7 @@ public class RequestWaiterTest {
                 "Host: tools.ietf.org\r\n" +
                 "Connection: keep-alive\r\n" +
                 "Pragma: no-cache\r\n" +
+                "content-length: 8\r\n"+
                 "Cache-Control: no-cache\r\n" +
                 "Upgrade-Insecure-Requests: 1\r\n" +
                 "Accept-Encoding: gzip, deflate, br\r\n" +

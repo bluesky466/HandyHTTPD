@@ -351,6 +351,10 @@ class RequestWaiter implements Runnable {
                 new InputStreamReader(new ByteArrayInputStream(buff, 0, headerEnd))
         );
 
+        if (headerEnd == 0) {
+            return;
+        }
+
         String[] requestLine = parseRequestLine(reader);
         Map<String, String> headers = parseHeaderFields(reader);
 
