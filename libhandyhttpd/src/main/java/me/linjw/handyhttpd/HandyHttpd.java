@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -116,6 +117,37 @@ public class HandyHttpd {
         } catch (FileNotFoundException e) {
             return newResponse(HttpResponse.Status.NOT_FOUND, "404 Not Found");
         }
+    }
+
+    /**
+     * new http response.
+     *
+     * @param status status
+     * @param is     is
+     * @return HttpResponse
+     */
+    public static HttpResponse newResponse(
+            HttpResponse.Status status,
+            InputStream is) {
+        return newResponse(status, is, MimeType.APPLICATION_OCTET_STREAM);
+    }
+
+    /**
+     * new http response.
+     *
+     * @param status   status
+     * @param is       is
+     * @param mimeType mimeType
+     * @return HttpResponse
+     */
+    public static HttpResponse newResponse(
+            HttpResponse.Status status,
+            InputStream is,
+            MimeType mimeType) {
+        if (is == null) {
+            return newResponse(HttpResponse.Status.NOT_FOUND, "404 Not Found");
+        }
+        return new HttpResponse(status, mimeType, is, -1);
     }
 
     /**

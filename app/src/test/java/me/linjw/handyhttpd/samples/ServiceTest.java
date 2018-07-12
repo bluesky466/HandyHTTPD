@@ -170,6 +170,15 @@ public class ServiceTest {
     }
 
     @Test
+    public void testInputStreamResponse() throws IOException {
+        HttpURLConnection conn = accessServicePath("/testInputStreamResponse", "GET");
+
+        assertEquals(200, conn.getResponseCode());
+        assertEquals("hello world", inputStreamToString(conn.getInputStream()));
+        then(mService).should().testInputStreamResponse();
+    }
+
+    @Test
     public void testHttpResponse() throws IOException {
         HttpURLConnection conn = accessServicePath("/testHttpResponse", "GET");
 

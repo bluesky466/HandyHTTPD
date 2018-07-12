@@ -1,9 +1,12 @@
 package me.linjw.handyhttpd.samples;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 
 import me.linjw.handyhttpd.HandyHttpd;
@@ -114,6 +117,26 @@ public class SimpleService {
             }
         }
         return file;
+    }
+
+    @Path("/testInputStreamResponse")
+    public InputStream testInputStreamResponse() {
+        mTarget.testInputStreamResponse();
+        File file = new File(".tmpTestParamFile");
+        if (!file.exists()) {
+            try {
+                FileWriter writer = new FileWriter(file.getAbsoluteFile());
+                writer.write("hello world");
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        try {
+            return new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            return null;
+        }
     }
 
     @Path("/testHttpResponse")

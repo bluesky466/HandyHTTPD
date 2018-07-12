@@ -1,6 +1,7 @@
 package me.linjw.handyhttpd.httpcore;
 
 import java.io.BufferedWriter;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -56,6 +57,9 @@ public class HttpResponse {
         printHeaderField(pw, "Content-Type", mMimeType.getType());
         printHeaderField(pw, "content-length", String.valueOf(mDataSize));
         printHeaderField(pw, "Connection", mKeepAlive ? "keep-alive" : "close");
+        if (mDataSize < 0) {
+            printHeaderField(pw, "Transfer-Encoding", "chunked");
+        }
         pw.append("\r\n");
         pw.flush();
     }
@@ -65,6 +69,12 @@ public class HttpResponse {
     }
 
     private void sendBody(OutputStream os) throws IOException {
+        ChunkedOutputStream chunkedOutputStream = null;
+        if (mDataSize < 0) {
+            chunkedOutputStream = new ChunkedOutputStream(os);
+            os = chunkedOutputStream;
+        }
+
         long BUFFER_SIZE = 16 * 1024;
         byte[] buff = new byte[(int) BUFFER_SIZE];
 
@@ -73,7 +83,45 @@ public class HttpResponse {
             os.write(buff, 0, read);
             read = mData.read(buff, 0, (int) BUFFER_SIZE);
         }
+
+        if (chunkedOutputStream != null) {
+            chunkedOutputStream.finish();
+        }
         mData.close();
+    }
+
+    /**
+     * ChunkedOutputStream
+     */
+    private static class ChunkedOutputStream extends OutputStream {
+        private OutputStream mOutputStream;
+
+        ChunkedOutputStream(OutputStream outputstream) {
+            mOutputStream = outputstream;
+        }
+
+        @Override
+        public void write(int data) throws IOException {
+            write(new byte[]{(byte) data}, 0, 1);
+        }
+
+        @Override
+        public void write(byte[] data) throws IOException {
+            write(data, 0, data.length);
+        }
+
+        @Override
+        public void write(byte[] data, int offset, int size) throws IOException {
+            if (size > 0) {
+                mOutputStream.write(String.format("%x\r\n", size).getBytes());
+                mOutputStream.write(data, offset, size);
+                mOutputStream.write("\r\n".getBytes());
+            }
+        }
+
+        public void finish() throws IOException {
+            mOutputStream.write("0\r\n\r\n".getBytes());
+        }
     }
 
     public enum Status {
