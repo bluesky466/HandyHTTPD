@@ -97,6 +97,10 @@ public class HttpRequest {
         return mFiles;
     }
 
+    public File getFile(String key) {
+        return mFiles.get(key);
+    }
+
     public InetAddress getInetAddress() {
         return mInetAddress;
     }
