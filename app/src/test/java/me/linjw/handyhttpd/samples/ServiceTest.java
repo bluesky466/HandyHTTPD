@@ -17,12 +17,16 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import me.linjw.handyhttpd.HandyHttpd;
 import me.linjw.handyhttpd.httpcore.HttpRequest;
+import me.linjw.handyhttpd.httpcore.cookie.Cookie;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.assertTrue;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.notNull;
@@ -83,7 +87,7 @@ public class ServiceTest {
 
     @Test
     public void testParamMap() throws IOException {
-        assertEquals(200, accessServicePath("/testParmMap", "GET").getResponseCode());
+        assertEquals(200, accessServicePath("/testParamMap", "GET").getResponseCode());
         then(mService)
                 .should()
                 .testParamMap(new HashMap<String, String>(), new HashMap<String, File>());
@@ -92,7 +96,7 @@ public class ServiceTest {
             put("a", "1");
             put("b", "2");
         }};
-        assertEquals(200, accessServicePath("/testParmMap?a=1&b=2", "GET").getResponseCode());
+        assertEquals(200, accessServicePath("/testParamMap?a=1&b=2", "GET").getResponseCode());
         then(mService)
                 .should()
                 .testParamMap(params, new HashMap<String, File>());
@@ -100,24 +104,24 @@ public class ServiceTest {
 
     @Test
     public void testParmAnn() throws IOException {
-        assertEquals(200, accessServicePath("/testParmAnn?a=123&b=321", "GET").getResponseCode());
+        assertEquals(200, accessServicePath("/testParamAnn?a=123&b=321", "GET").getResponseCode());
         then(mService)
                 .should()
-                .testParmAnn("123", null);
+                .testParamAnn("123", null);
 
-        assertEquals(200, accessServicePath("/testParmAnn?a=123&B=321", "GET").getResponseCode());
+        assertEquals(200, accessServicePath("/testParamAnn?a=123&B=321", "GET").getResponseCode());
         then(mService)
                 .should()
-                .testParmAnn("123", "321");
+                .testParamAnn("123", "321");
     }
 
     @Test
     public void testParmHeader() throws IOException {
-        assertEquals(200, accessServicePath("/testParmHeader", "GET").getResponseCode());
+        assertEquals(200, accessServicePath("/testParamHeader", "GET").getResponseCode());
 
         Class c = new HashMap<>().getClass();
         ArgumentCaptor<? extends HashMap> headers = ArgumentCaptor.forClass(c);
-        then(mService).should().testParmHeader(eq("127.0.0.1:8888"), eq("127.0.0.1"), headers.capture());
+        then(mService).should().testParamHeader(eq("127.0.0.1:8888"), eq("127.0.0.1"), headers.capture());
         assertEquals("127.0.0.1", headers.getValue().get("remote-addr"));
         assertEquals("keep-alive", headers.getValue().get("connection"));
     }
@@ -187,6 +191,62 @@ public class ServiceTest {
         then(mService).should().testHttpResponse();
     }
 
+    @Test
+    public void testSetCookie() throws IOException {
+        HttpURLConnection conn = accessServicePath("/testCookie", "GET", "aaa=111; bbb=222");
+        assertEquals(200, conn.getResponseCode());
+
+        //获取cookie
+        Map<String, List<String>> map = conn.getHeaderFields();
+        List<String> cookies = map.get("Set-Cookie");
+
+        assertTrue(cookies.get(1).startsWith("a=1; expires="));
+        assertTrue(cookies.get(0).startsWith("b=2; expires="));
+        assertEquals(2, cookies.size());
+
+        ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
+        then(mService).should().testCookie(captor.capture());
+
+        HttpRequest request = captor.getValue();
+        assertEquals("111", request.getCookies().get("aaa").getValueString());
+        assertEquals("222", request.getCookies().get("bbb").getValueString());
+    }
+
+    @Test
+    public void testParamCookie() throws IOException {
+        HttpURLConnection conn = accessServicePath("/testParamCookie", "GET", "aaa=111; bbb=222");
+        assertEquals(200, conn.getResponseCode());
+
+        //获取cookie
+        ArgumentCaptor<Cookie> captor1 = ArgumentCaptor.forClass(Cookie.class);
+        ArgumentCaptor<Cookie> captor2 = ArgumentCaptor.forClass(Cookie.class);
+        then(mService).should().testParamCookie(captor1.capture(), captor2.capture());
+
+        assertEquals("helloworld", captor1.getValue().getValueString());
+        assertEquals("222", captor2.getValue().getValueString());
+    }
+
+    @Test
+    public void testParamCookieMap() throws IOException {
+        HttpURLConnection conn = accessServicePath(
+                "/testParamCookieMap", "GET", "aaa=111; bbb=222");
+        assertEquals(200, conn.getResponseCode());
+
+        //获取cookie
+        ArgumentCaptor<Map> captor = ArgumentCaptor.forClass(Map.class);
+        then(mService).should().testParamCookieMap(captor.capture());
+
+        Map<String, Cookie> map = captor.getValue();
+        assertEquals("helloworld", map.get("aaa").getValueString());
+        assertNull(map.get("bbb"));
+
+        List<String> cookies = conn.getHeaderFields().get("Set-Cookie");
+        assertTrue(cookies.get(0).startsWith("bbb=-delete-; expires="));
+        assertTrue(cookies.get(1).startsWith("ccc=123; expires="));
+        assertTrue(cookies.get(2).startsWith("aaa=helloworld; expires="));
+        assertEquals(3, cookies.size());
+    }
+
     private String inputStreamToString(InputStream is) throws IOException {
         StringBuilder builder = new StringBuilder();
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
@@ -199,11 +259,20 @@ public class ServiceTest {
     }
 
     private HttpURLConnection accessServicePath(String path, String method) throws IOException {
+        return accessServicePath(path, method, null);
+    }
+
+    private HttpURLConnection accessServicePath(String path,
+                                                String method,
+                                                String cookie) throws IOException {
         URL url = new URL("http://127.0.0.1:" + PORT + path);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setConnectTimeout(3000);
         conn.setReadTimeout(3000);
         conn.setRequestMethod(method);
+        if (cookie != null) {
+            conn.setRequestProperty("Cookie", cookie);
+        }
         conn.connect();
         return conn;
     }

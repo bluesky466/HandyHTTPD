@@ -3,6 +3,7 @@ package me.linjwhandyhttpd.compiler.adaptor;
 import javax.lang.model.element.VariableElement;
 
 import me.linjw.handyhttpd.annotation.Header;
+import me.linjw.handyhttpd.annotation.Key;
 import me.linjw.handyhttpd.annotation.Param;
 
 /**
@@ -14,12 +15,15 @@ public abstract class ParamAdaptor {
     abstract public String getConvertCode(String httpRequest, VariableElement param);
 
     protected static String getKeyName(VariableElement param) {
-        Param keyName = param.getAnnotation(Param.class);
+        Param paramName = param.getAnnotation(Param.class);
         Header header = param.getAnnotation(Header.class);
+        Key key = param.getAnnotation(Key.class);
         if (header != null && !header.value().isEmpty()) {
             return header.value();
-        } else if (keyName != null && !keyName.value().isEmpty()) {
-            return keyName.value();
+        } else if (paramName != null && !paramName.value().isEmpty()) {
+            return paramName.value();
+        } else if (key != null && !key.value().isEmpty()) {
+            return key.value();
         }
         return param.getSimpleName().toString();
 

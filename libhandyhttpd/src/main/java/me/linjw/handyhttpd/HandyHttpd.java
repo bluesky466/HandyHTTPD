@@ -424,24 +424,24 @@ public class HandyHttpd {
         }
 
         void registerServiceHandler(String uri,
-                                    IServiceHandler operation,
+                                    IServiceHandler handler,
                                     Get getFlag,
                                     Post postFlag) {
 
             if (getFlag == null && postFlag == null) {
                 Log.log("registerOperation GET " + uri);
                 Log.log("registerOperation POST " + uri);
-                mPostServices.put(uri, operation);
-                mGetServices.put(uri, operation);
+                mPostServices.put(uri, handler);
+                mGetServices.put(uri, handler);
             } else {
                 if (getFlag != null) {
                     Log.log("registerOperation GET " + uri);
-                    mGetServices.put(uri, operation);
+                    mGetServices.put(uri, handler);
                 }
 
                 if (postFlag != null) {
                     Log.log("registerOperation POST " + uri);
-                    mPostServices.put(uri, operation);
+                    mPostServices.put(uri, handler);
                 }
             }
         }

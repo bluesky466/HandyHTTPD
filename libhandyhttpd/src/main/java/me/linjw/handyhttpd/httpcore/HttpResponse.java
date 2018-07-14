@@ -1,15 +1,17 @@
 package me.linjw.handyhttpd.httpcore;
 
 import java.io.BufferedWriter;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.Map;
 
 import me.linjw.handyhttpd.HandyHttpd;
+import me.linjw.handyhttpd.httpcore.cookie.Cookie;
 
 /**
  * Created by linjiawei on 2018/3/30.
@@ -24,6 +26,8 @@ public class HttpResponse {
     private MimeType mMimeType;
     private long mDataSize;
     private boolean mKeepAlive;
+    private Map<String, Cookie> mCookies;
+    private Map<String, String> mHeader = new HashMap<>();
 
     public HttpResponse(Status status, MimeType mimeType, InputStream data, long dataSize) {
         mStatus = status;
@@ -42,6 +46,10 @@ public class HttpResponse {
         }
     }
 
+    void setCookies(Map<String, Cookie> cookies) {
+        mCookies = cookies;
+    }
+
     void setKeepAlive(boolean keepAlive) {
         mKeepAlive = keepAlive;
     }
@@ -57,6 +65,13 @@ public class HttpResponse {
         printHeaderField(pw, "Content-Type", mMimeType.getType());
         printHeaderField(pw, "content-length", String.valueOf(mDataSize));
         printHeaderField(pw, "Connection", mKeepAlive ? "keep-alive" : "close");
+        if (mCookies != null) {
+            for (Map.Entry<String, Cookie> entry : mCookies.entrySet()) {
+                if (entry.getValue().isUpdata()) {
+                    printHeaderField(pw, "Set-Cookie", entry.getValue().getHeader());
+                }
+            }
+        }
         if (mDataSize < 0) {
             printHeaderField(pw, "Transfer-Encoding", "chunked");
         }
@@ -122,6 +137,16 @@ public class HttpResponse {
         public void finish() throws IOException {
             mOutputStream.write("0\r\n\r\n".getBytes());
         }
+    }
+
+    /**
+     * set header.
+     *
+     * @param key key
+     * @param val val
+     */
+    public void setHeader(String key, String val) {
+        mHeader.put(key, val);
     }
 
     public enum Status {

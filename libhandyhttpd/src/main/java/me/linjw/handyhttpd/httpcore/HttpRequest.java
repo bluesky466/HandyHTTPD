@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import me.linjw.handyhttpd.exception.HandyException;
+import me.linjw.handyhttpd.httpcore.cookie.Cookie;
 
 /**
  * Created by linjiawei on 2018/3/30.
@@ -21,6 +22,7 @@ public class HttpRequest {
     private final Map<String, String> mHeaders;
     private final Map<String, String> mParams;
     private final Map<String, File> mFiles;
+    private final Map<String, Cookie> mCookies;
     private final InetAddress mInetAddress;
 
     /**
@@ -49,6 +51,7 @@ public class HttpRequest {
                        String uri,
                        String version,
                        Map<String, String> headers,
+                       Map<String, Cookie> cookies,
                        InetAddress inetAddress) throws HandyException {
         mMethod = Method.toMethod(method);
         mVersion = version;
@@ -63,6 +66,15 @@ public class HttpRequest {
             mParams = parseParams(uri.substring(posQuery + 1));
         }
         mFiles = new HashMap<>();
+        mCookies = cookies;
+    }
+
+    public Map<String, Cookie> getCookies() {
+        return mCookies;
+    }
+
+    public Cookie getCookie(String key) {
+        return mCookies.get(key);
     }
 
     public Method getMethod() {

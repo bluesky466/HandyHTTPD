@@ -11,11 +11,13 @@ import java.util.Map;
 import me.linjw.handyhttpd.HandyHttpd;
 import me.linjw.handyhttpd.annotation.Get;
 import me.linjw.handyhttpd.annotation.Header;
-import me.linjw.handyhttpd.annotation.Post;
+import me.linjw.handyhttpd.annotation.Key;
 import me.linjw.handyhttpd.annotation.Param;
 import me.linjw.handyhttpd.annotation.Path;
+import me.linjw.handyhttpd.annotation.Post;
 import me.linjw.handyhttpd.httpcore.HttpRequest;
 import me.linjw.handyhttpd.httpcore.HttpResponse;
+import me.linjw.handyhttpd.httpcore.cookie.Cookie;
 
 /**
  * Created by linjiawei on 2018/7/5.
@@ -50,26 +52,45 @@ public class SimpleService {
         return mTarget.testParam(str, bool, Bool, b, B, c, C, d, D, f, F, i, I, l, L, s, S);
     }
 
-    @Path("/testParmAnn")
-    public void testParmAnn(@Param String a, @Param("B") String b) {
-        mTarget.testParmAnn(a, b);
+    @Path("/testParamAnn")
+    public void testParamAnn(@Param String a, @Param("B") String b) {
+        mTarget.testParamAnn(a, b);
     }
 
-    @Path("/testParmMap")
+    @Path("/testParamMap")
     public void testParamMap(Map<String, String> params, Map<String, File> files) {
         mTarget.testParamMap(params, files);
     }
 
-    @Path("/testParmHeader")
-    public void testParmHeader(@Header() String host,
-                               @Header("http-client-ip") String clientIp,
-                               @Header Map<String, String> headers) {
-        mTarget.testParmHeader(host, clientIp, headers);
+    @Path("/testParamHeader")
+    public void testParamHeader(@Header() String host,
+                                @Header("http-client-ip") String clientIp,
+                                @Header Map<String, String> headers) {
+        mTarget.testParamHeader(host, clientIp, headers);
     }
 
     @Path("/testParmHttpRequest")
     public void testParmHttpRequest(HttpRequest request) {
         mTarget.testParmHttpRequest(request);
+    }
+
+
+    @Path("/testParamCookie")
+    public String testParamCookie(Cookie aaa, @Key("bbb") Cookie argB) {
+        mTarget.testParamCookie(aaa, argB);
+        aaa.setValue("helloworld");
+        return "OK";
+    }
+
+    @Path("/testParamCookieMap")
+    public String testParamCookieMap(Map<String, Cookie> cookies) {
+        mTarget.testParamCookieMap(cookies);
+        cookies.get("aaa").setValue("helloworld");
+        cookies.remove("bbb");
+
+        Cookie cookie = new Cookie("ccc", "123");
+        cookies.put(cookie.getKey(), cookie);
+        return "OK";
     }
 
     @Get
@@ -142,5 +163,20 @@ public class SimpleService {
     public HttpResponse testHttpResponse() {
         mTarget.testHttpResponse();
         return HandyHttpd.newResponse(HttpResponse.Status.REDIRECT, "Moved Permanently");
+    }
+
+    @Path("/testCookie")
+    public String testCookie(HttpRequest request) {
+        mTarget.testCookie(request);
+
+        Map<String, Cookie> cookies = request.getCookies();
+
+        Cookie cookie1 = new Cookie("a", "1");
+        cookies.put(cookie1.getKey(), cookie1);
+
+        Cookie cookie2 = new Cookie("b", "2");
+        cookies.put(cookie2.getKey(), cookie2);
+
+        return "OK";
     }
 }

@@ -20,6 +20,8 @@ import java.util.Map;
 
 import me.linjw.handyhttpd.HandyHttpd;
 import me.linjw.handyhttpd.exception.HandyException;
+import me.linjw.handyhttpd.httpcore.cookie.Cookie;
+import me.linjw.handyhttpd.httpcore.cookie.CookieMap;
 import me.linjw.handyhttpd.httpcore.multipartbody.MultipartBodyProcessor;
 
 /**
@@ -369,11 +371,14 @@ class RequestWaiter implements Runnable {
             return;
         }
         requestLine[REQUEST_LINE_URI] = decodeUrl(requestLine[REQUEST_LINE_URI]);
+
+        Map<String, Cookie> cookies = getCookies(headers);
         HttpRequest request = new HttpRequest(
                 requestLine[REQUEST_LINE_METHOD],
                 requestLine[REQUEST_LINE_URI],
                 requestLine[REQUEST_LINE_VERSION],
                 headers,
+                new CookieMap(cookies),
                 mInetAddress);
         parseBody(mInputStream, request, buff, mTempFileDir, mMultipartBodyProcessor);
         HttpResponse response = mServer.onRequest(request);
@@ -383,7 +388,28 @@ class RequestWaiter implements Runnable {
                 && (connection == null || !connection.contains("close"))) {
             response.setKeepAlive(true);
         }
+        response.setCookies(cookies);
         response.send(mOutputStream);
+    }
+
+
+    private Map<String, Cookie> getCookies(Map<String, String> headers) {
+        Map<String, Cookie> cookies = new HashMap<>();
+        if (headers == null) {
+            return cookies;
+        }
+        String header = headers.get("cookie");
+        if (header == null) {
+            return cookies;
+        }
+        String[] sp = header.split(";");
+        for (String data : sp) {
+            Cookie cookie = new Cookie(data.trim());
+            if (cookie.getKey() != null) {
+                cookies.put(cookie.getKey(), cookie);
+            }
+        }
+        return cookies;
     }
 
     public void close() throws IOException {

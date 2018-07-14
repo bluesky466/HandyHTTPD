@@ -22,6 +22,7 @@ public class HttpRequestTest {
                 "/path1/path2?key1=val1&key2=val2",
                 "HTTP/1.1",
                 headers,
+                null,
                 null
         );
 
