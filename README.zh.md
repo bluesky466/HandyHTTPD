@@ -7,7 +7,7 @@ HandyHttpd是一个用java写的简单易用的微型http服务器,你能用它�
 
 ### Hello world Demo
 
-下面是一个Hello World 安卓Demo.你在局域网中访问http://ip:8888/hello?name=tom,然后接收到"Hello tom"的返回:
+下面是一个Hello World 安卓Demo.你在局域网中访问http://ip:8888/hello?name=tom",然后接收到"Hello tom"的返回:
 
 ```
 public class MainActivity extends AppCompatActivity {
