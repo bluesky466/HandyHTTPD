@@ -103,7 +103,7 @@ public void getFunc() {
 }
 
 @Post
-@Path("postFoo")
+@Path("postFunc")
 public void postFunc() {
 }
 ```
@@ -114,7 +114,7 @@ The engine will find the http parameter by the method parameter name,but you can
 
 ```
 @Path("/hello")
-public String sayHello(@Path("name") String arg) {
+public String sayHello(@Param("name") String arg) {
     return "Hello " + arg;
 }
 ```
