@@ -227,6 +227,27 @@ public class ServiceTest {
     }
 
     @Test
+    public void testParamCookieEmpty() throws IOException {
+        HttpURLConnection conn = accessServicePath("/testParamCookie", "GET");
+        assertEquals(200, conn.getResponseCode());
+
+        //获取cookie
+        ArgumentCaptor<Cookie> captor1 = ArgumentCaptor.forClass(Cookie.class);
+        ArgumentCaptor<Cookie> captor2 = ArgumentCaptor.forClass(Cookie.class);
+        then(mService).should().testParamCookie(captor1.capture(), captor2.capture());
+
+        assertEquals("helloworld", captor1.getValue().getValueString());
+        assertEquals(null, captor2.getValue().getValueString());
+
+        //获取cookie
+        Map<String, List<String>> map = conn.getHeaderFields();
+        List<String> cookies = map.get("Set-Cookie");
+
+        assertTrue(cookies.get(0).startsWith("aaa=helloworld; expires="));
+        assertEquals(1, cookies.size());
+    }
+
+    @Test
     public void testParamCookieMap() throws IOException {
         HttpURLConnection conn = accessServicePath(
                 "/testParamCookieMap", "GET", "aaa=111; bbb=222");

@@ -13,6 +13,13 @@ public class Adaptor extends ParamAdaptor {
     @Override
     public String getConvertCode(String httpRequest, VariableElement param) {
         String key = getKeyName(param);
-        return httpRequest + ".getCookie(\"" + key + "\")";
+        String cookie = httpRequest + ".getCookie(\"" + key + "\")";
+        return cookie +
+                "!=null?" +
+                cookie +
+                ":" +
+                httpRequest +
+                ".addCookie(" +
+                "new me.linjw.handyhttpd.httpcore.cookie.Cookie(\"" + key + "\",null))";
     }
 }

@@ -73,6 +73,11 @@ public class HttpRequest {
         return mCookies;
     }
 
+    public Cookie addCookie(Cookie cookie) {
+        mCookies.put(cookie.getKey(), cookie);
+        return cookie;
+    }
+
     public Cookie getCookie(String key) {
         return mCookies.get(key);
     }

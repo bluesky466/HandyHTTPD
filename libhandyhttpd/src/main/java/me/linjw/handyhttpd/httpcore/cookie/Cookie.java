@@ -52,7 +52,7 @@ public class Cookie {
         mKey = key;
         mValue = value;
         mExpires = expires;
-        mIsUpdata = true;
+        mIsUpdata = mValue != null;
     }
 
     public static String getHTTPTime(int days) {

@@ -65,6 +65,7 @@ public class HttpResponse {
         printHeaderField(pw, "Content-Type", mMimeType.getType());
         printHeaderField(pw, "content-length", String.valueOf(mDataSize));
         printHeaderField(pw, "Connection", mKeepAlive ? "keep-alive" : "close");
+
         if (mCookies != null) {
             for (Map.Entry<String, Cookie> entry : mCookies.entrySet()) {
                 if (entry.getValue().isUpdata()) {
