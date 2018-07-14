@@ -3,16 +3,15 @@ package me.linjw.handyhttpd.samples;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
 import me.linjw.handyhttpd.HandyHttpd;
-import me.linjw.handyhttpd.annotation.GET;
+import me.linjw.handyhttpd.annotation.Get;
 import me.linjw.handyhttpd.annotation.Header;
-import me.linjw.handyhttpd.annotation.POST;
+import me.linjw.handyhttpd.annotation.Post;
 import me.linjw.handyhttpd.annotation.Param;
 import me.linjw.handyhttpd.annotation.Path;
 import me.linjw.handyhttpd.httpcore.HttpRequest;
@@ -73,20 +72,20 @@ public class SimpleService {
         mTarget.testParmHttpRequest(request);
     }
 
-    @GET
+    @Get
     @Path("/testMethodGet")
     public void testMethodGet() {
         mTarget.testMethodGet();
     }
 
-    @POST
+    @Post
     @Path("/testMethodPost")
     public void testMethodPost() {
         mTarget.testMethodPost();
     }
 
-    @GET
-    @POST
+    @Get
+    @Post
     @Path("/testMethodGetPostAnn")
     public void testMethodGetPostAnn() {
         mTarget.testMethodGetPostAnn();

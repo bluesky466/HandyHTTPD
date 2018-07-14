@@ -14,8 +14,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import me.linjw.handyhttpd.annotation.GET;
-import me.linjw.handyhttpd.annotation.POST;
+import me.linjw.handyhttpd.annotation.Get;
+import me.linjw.handyhttpd.annotation.Post;
 import me.linjw.handyhttpd.annotation.Path;
 import me.linjw.handyhttpd.httpcore.HttpRequest;
 import me.linjw.handyhttpd.httpcore.HttpResponse;
@@ -404,8 +404,8 @@ public class HandyHttpd {
 
             for (Method method : service.getClass().getMethods()) {
                 Path annotation = method.getAnnotation(Path.class);
-                GET getFlag = method.getAnnotation(GET.class);
-                POST postFlag = method.getAnnotation(POST.class);
+                Get getFlag = method.getAnnotation(Get.class);
+                Post postFlag = method.getAnnotation(Post.class);
 
                 if (annotation != null) {
 
@@ -425,8 +425,8 @@ public class HandyHttpd {
 
         void registerServiceHandler(String uri,
                                     IServiceHandler operation,
-                                    GET getFlag,
-                                    POST postFlag) {
+                                    Get getFlag,
+                                    Post postFlag) {
 
             if (getFlag == null && postFlag == null) {
                 Log.log("registerOperation GET " + uri);
