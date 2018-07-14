@@ -1,3 +1,5 @@
+[点我查看中文版](https://github.com/bluesky466/HandyHTTPD/blob/master/README.zh.md)
+
 # HandyHttpd
 
 HandyHttpd is a simple and handy http server in java. You can use it to provide some simple service based on HTTP protocol.
@@ -108,7 +110,7 @@ public void postFunc() {
 }
 ```
 
-#### Param
+#### Param Name
 
 The engine will find the http parameter by the method parameter name,but you can use @Param(key) to set the param name:
 
@@ -120,7 +122,7 @@ public String sayHello(@Param("name") String arg) {
 ```
 
 For the above examples, the http param name is still "name".So the url is still like 
-http://ip:port/hello?name=XXXXX"
+"http://ip:port/hello?name=XXXXX"
 
 #### Header
 
