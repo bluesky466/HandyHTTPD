@@ -11,7 +11,7 @@ import java.util.TimeZone;
  */
 
 public class Cookie {
-    public static final int DEFAULT_EXPIRES = 30;
+    public static int DEFAULT_EXPIRES = 30;
     private String mKey;
     private String mValue;
     private int mExpires;

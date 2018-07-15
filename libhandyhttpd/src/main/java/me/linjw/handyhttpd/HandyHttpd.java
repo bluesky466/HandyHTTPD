@@ -21,6 +21,7 @@ import me.linjw.handyhttpd.httpcore.HttpRequest;
 import me.linjw.handyhttpd.httpcore.HttpResponse;
 import me.linjw.handyhttpd.httpcore.HttpServer;
 import me.linjw.handyhttpd.httpcore.MimeType;
+import me.linjw.handyhttpd.httpcore.cookie.Cookie;
 import me.linjw.handyhttpd.scheduler.FixSizeScheduler;
 import me.linjw.handyhttpd.scheduler.IScheduler;
 
@@ -394,6 +395,7 @@ public class HandyHttpd {
          * load service.
          *
          * @param service service
+         * @return Server
          */
         public <T> Server loadService(T service) throws
                 ClassNotFoundException,
@@ -423,10 +425,32 @@ public class HandyHttpd {
             return this;
         }
 
-        void registerServiceHandler(String uri,
-                                    IServiceHandler handler,
-                                    Get getFlag,
-                                    Post postFlag) {
+        /**
+         * set response send body buffer size
+         *
+         * @param bufferSize buffer size
+         * @return Server
+         */
+        public Server setResponseSendBodyBufferSize(int bufferSize) {
+            HttpResponse.BUFFER_SIZE = bufferSize;
+            return this;
+        }
+
+        /**
+         * set cookie default expires.
+         *
+         * @param expires expires
+         * @return Server
+         */
+        public Server setCookieDefaultExpires(int expires) {
+            Cookie.DEFAULT_EXPIRES = expires;
+            return this;
+        }
+
+        private void registerServiceHandler(String uri,
+                                            IServiceHandler handler,
+                                            Get getFlag,
+                                            Post postFlag) {
 
             if (getFlag == null && postFlag == null) {
                 Log.log("registerOperation GET " + uri);

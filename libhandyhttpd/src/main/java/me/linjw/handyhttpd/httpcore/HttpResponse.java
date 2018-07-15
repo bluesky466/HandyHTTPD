@@ -21,6 +21,8 @@ import me.linjw.handyhttpd.httpcore.cookie.Cookie;
 
 @SuppressWarnings("unused")
 public class HttpResponse {
+    public static long BUFFER_SIZE = 16 * 1024;
+
     private Status mStatus;
     private InputStream mData;
     private MimeType mMimeType;
@@ -91,7 +93,6 @@ public class HttpResponse {
             os = chunkedOutputStream;
         }
 
-        long BUFFER_SIZE = 16 * 1024;
         byte[] buff = new byte[(int) BUFFER_SIZE];
 
         int read = mData.read(buff, 0, (int) BUFFER_SIZE);
