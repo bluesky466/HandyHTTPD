@@ -4,6 +4,7 @@
 
 HandyHttpd是一个用java写的简单易用的微型http服务器,你能用它在局域网中提供一些简单的HTTP服务.
 
+这个README文档列出了一些主要的功能,你也可以在[单元测试](https://github.com/bluesky466/HandyHTTPD/blob/master/app/src/test/java/me/linjw/handyhttpd/samples/SimpleService.java)中查看它的所有功能.
 
 ### Hello world Demo
 
@@ -72,10 +73,12 @@ public void foo(int intParam, String strParam, File fileParam, Boolean booleanPa
 - String
 - File
 - HttpRequest
+- Cookie
+- Map<String,Cookie>
 - Map<String,String>
 - Map<String,File>
 
-__值得一提的是 : 你可以用 Map\<String,String\> 去拿到所有的HTTP参数, 用 Map\<String,File\> 去拿到所有的上传文件.__
+__值得一提的是 : 你可以用 Map\<String,String\> 去拿到所有的HTTP参数, 用 Map\<String,File\> 去拿到所有的上传文件, 用Map\<String,Cookie\>去拿到所有的Cookie.__
 
 ### 返回值
 
@@ -139,4 +142,3 @@ public void testParmHeader(@Header() String host,
 ### 许可
 
 该项目使用 [WTFPL LICENSE](http://www.wtfpl.net/).我喜欢这个许可,你他妈可以想干啥就干啥.
-

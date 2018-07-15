@@ -4,6 +4,7 @@
 
 HandyHttpd is a simple and handy http server in java. You can use it to provide some simple service based on HTTP protocol.
 
+This README gave an outline of HandyHTTPD,And there are examples for all the features in [unit test](https://github.com/bluesky466/HandyHTTPD/blob/master/app/src/test/java/me/linjw/handyhttpd/samples/SimpleService.java)
 
 ### Hello world Demo
 
@@ -73,10 +74,12 @@ Supported parameter types:
 - String
 - File
 - HttpRequest
+- Cookie
+- Map<String,Cookie>
 - Map<String,String>
 - Map<String,File>
 
-__Note : You can use Map\<String,String\> to get all parameters, and use Map\<String,File\> to get all upload files.__
+__Note : You can use Map\<String,String\> to get all parameters, use Map\<String,File\> to get all upload files and use Map\<String,Cookie\> to get all Cookies.__
 
 ### Return Value
 
@@ -121,7 +124,7 @@ public String sayHello(@Param("name") String arg) {
 }
 ```
 
-For the above examples, the http param name is still "name".So the url is still like 
+For the above examples, the http param name is still "name".So the url is still like
 "http://ip:port/hello?name=XXXXX"
 
 #### Header
@@ -141,4 +144,3 @@ public void testParmHeader(@Header() String host,
 ### License
 
 This project is released under the [WTFPL LICENSE](http://www.wtfpl.net/).I love the license,you can do what the fuck you want to do.
-
